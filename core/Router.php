@@ -20,7 +20,21 @@ class Router
         $addons = $GLOBALS['addons'] ?? [];
 
         if ($addonSlug && isset($addons[$addonSlug])) {
-            // In real app you would map to controller
+            // Handle POST requests for actions like convert
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'convert') {
+                $handlerFile = __DIR__ . "/../addons/{$addonSlug}/handlers/{$action}.php";
+                if (file_exists($handlerFile)) {
+                    require $handlerFile;
+                    return;
+                }
+            }
+
+            $viewFile = __DIR__ . "/../addons/{$addonSlug}/views/{$action}.php";
+            if (file_exists($viewFile)) {
+                require $viewFile;
+                return;
+            }
+            // Fallback to placeholder
             echo "<h1>{$addons[$addonSlug]['name']} - {$action}</h1>";
             echo "<p>This is a placeholder route handled by the starter router.</p>";
             return;

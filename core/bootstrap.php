@@ -22,6 +22,9 @@ spl_autoload_register(function ($class) {
 
 require __DIR__ . '/helpers/functions.php';
 
+// Load Composer autoloader
+require __DIR__ . '/../vendor/autoload.php';
+
 // Load config
 $config = require __DIR__ . '/../config/system.php';
 
