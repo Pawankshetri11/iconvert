@@ -82,6 +82,12 @@ class User extends Authenticatable
             return false; // No active subscription
         }
 
+        // If subscription has a plan, use plan's included addons
+        if ($subscription->plan) {
+            return $subscription->plan->hasAddon($addonSlug);
+        }
+
+        // Fallback to legacy logic
         // Free plan has access to PDF converter only
         if ($subscription->plan_name === 'Free') {
             return $addonSlug === 'pdf-converter';
@@ -112,6 +118,21 @@ class User extends Authenticatable
             return 0;
         }
 
+        // If subscription has a plan, use plan's limits
+        if ($subscription->plan) {
+            if ($subscription->plan->max_conversions_per_month === 0) {
+                return -1; // Unlimited
+            }
+
+            $usedConversions = $this->usageLogs()
+                ->where('created_at', '>=', $subscription->starts_at)
+                ->where('success', true)
+                ->count();
+
+            return max(0, $subscription->plan->max_conversions_per_month - $usedConversions);
+        }
+
+        // Fallback to legacy logic
         if ($subscription->conversion_limit === 0) {
             return -1; // Unlimited
         }

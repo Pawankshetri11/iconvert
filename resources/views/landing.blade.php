@@ -8,16 +8,16 @@
     <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; width: 100%;">
         <div style="text-align: center;" data-aos="fade-up">
             <h1 style="font-size: 4rem; font-weight: 700; font-family: 'Playfair Display', serif; background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 2rem; line-height: 1.1;" data-aos="fade-up" data-aos-delay="200">
-                PDF CONVERTER PRO
+                {{ \App\Models\Content::getValue('hero_title', 'PDF CONVERTER PRO') }}
             </h1>
             <p style="font-size: 1.5rem; color: #e0e0e0; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;" data-aos="fade-up" data-aos-delay="400">
-                Transform your documents with elegance and precision. Professional PDF conversion tools powered by cutting-edge technology.
+                {{ \App\Models\Content::getValue('hero_subtitle', 'Transform your documents with elegance and precision. Professional PDF conversion tools powered by cutting-edge technology.') }}
             </p>
             <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;" data-aos="fade-up" data-aos-delay="600">
                 @auth
                     <a href="{{ route('pdf-converter') }}" style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #000; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 1.1rem; transition: all 0.3s ease; box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3); border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 40px rgba(255, 215, 0, 0.4)'; this.style.borderColor='#ffd700'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(255, 215, 0, 0.3)'; this.style.borderColor='transparent'">
                         <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                            ⚡ Start Converting
+                            ⚡ {{ \App\Models\Content::getValue('hero_cta_primary', 'Start Converting') }}
                         </span>
                     </a>
                 @else
@@ -52,8 +52,8 @@
 <section style="background: rgba(255, 255, 255, 0.02); padding: 6rem 0; position: relative;">
     <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
         <div style="text-align: center; margin-bottom: 4rem;" data-aos="fade-up">
-            <h2 style="font-size: 2.5rem; font-weight: 700; font-family: 'Playfair Display', serif; color: #ffd700; margin-bottom: 1rem;">Powerful Conversion Tools</h2>
-            <p style="font-size: 1.2rem; color: #b0b0b0; max-width: 600px; margin: 0 auto;">Everything you need to convert and transform your documents with professional-grade precision</p>
+            <h2 style="font-size: 2.5rem; font-weight: 700; font-family: 'Playfair Display', serif; color: #ffd700; margin-bottom: 1rem;">{{ \App\Models\Content::getValue('features_title', 'Powerful Conversion Tools') }}</h2>
+            <p style="font-size: 1.2rem; color: #b0b0b0; max-width: 600px; margin: 0 auto;">{{ \App\Models\Content::getValue('features_subtitle', 'Everything you need to convert and transform your documents with professional-grade precision') }}</p>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">

@@ -24,25 +24,34 @@ $conversionType = $_POST['conversion_type'] ?? 'html-to-pdf';
 
 // Check user authentication and subscription
 $user = Auth::user();
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Authentication required']);
-    exit;
-}
+$isGuest = !$user;
 
-// Check if user has access to PDF converter
-if (!$user->hasAddonAccess('pdf-converter')) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Access denied. Upgrade your plan to use PDF converter.']);
-    exit;
-}
+if ($isGuest) {
+    // Guest user - check daily limit (3 conversions per day per IP)
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $cacheKey = 'guest_conversions_' . $ip . '_' . date('Y-m-d');
+    $guestConversions = \Illuminate\Support\Facades\Cache::get($cacheKey, 0);
 
-// Check conversion limits
-$remainingConversions = $user->getRemainingConversions();
-if ($remainingConversions !== -1 && $remainingConversions <= 0) {
-    http_response_code(429);
-    echo json_encode(['error' => 'Conversion limit exceeded. Upgrade your plan for more conversions.']);
-    exit;
+    if ($guestConversions >= 3) {
+        http_response_code(429);
+        echo json_encode(['error' => 'Daily limit exceeded for guests. Please register for unlimited access.']);
+        exit;
+    }
+} else {
+    // Registered user - check subscription access
+    if (!$user->hasAddonAccess('pdf-converter')) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Access denied. Upgrade your plan to use PDF converter.']);
+        exit;
+    }
+
+    // Check conversion limits
+    $remainingConversions = $user->getRemainingConversions();
+    if ($remainingConversions !== -1 && $remainingConversions <= 0) {
+        http_response_code(429);
+        echo json_encode(['error' => 'Conversion limit exceeded. Upgrade your plan for more conversions.']);
+        exit;
+    }
 }
 
 $files = $_FILES['files'];
@@ -81,16 +90,16 @@ if (empty($uploadedFiles)) {
 // Process files based on conversion type
 switch ($conversionType) {
     case 'html-to-pdf':
-        processHtmlToPdf($uploadedFiles, $user);
+        processHtmlToPdf($uploadedFiles, $user, $isGuest);
         break;
     case 'pdf-to-word':
-        processPdfToWord($uploadedFiles, $user);
+        processPdfToWord($uploadedFiles, $user, $isGuest);
         break;
     case 'pdf-to-text':
-        processPdfToText($uploadedFiles, $user);
+        processPdfToText($uploadedFiles, $user, $isGuest);
         break;
     case 'images-to-pdf':
-        processImagesToPdf($uploadedFiles, $user);
+        processImagesToPdf($uploadedFiles, $user, $isGuest);
         break;
     default:
         http_response_code(400);
@@ -109,7 +118,7 @@ if (count($uploadedFiles) > 1) {
     ]);
 }
 
-function processHtmlToPdf($files, $user) {
+function processHtmlToPdf($files, $user, $isGuest) {
     $dompdf = new Dompdf();
     $options = new Options();
     $options->set('isHtml5ParserEnabled', true);
@@ -130,17 +139,24 @@ function processHtmlToPdf($files, $user) {
             $pdfFilename = pathinfo($file['name'], PATHINFO_FILENAME) . '.pdf';
 
             // Log successful conversion
-            UsageLog::logSuccess(
-                $user->id,
-                'pdf-converter',
-                'convert',
-                'html-to-pdf',
-                [
-                    'input_format' => $fileExtension,
-                    'output_filename' => $pdfFilename,
-                    'file_size' => strlen($pdfOutput)
-                ]
-            );
+            if ($isGuest) {
+                // Increment guest conversion counter
+                $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                $cacheKey = 'guest_conversions_' . $ip . '_' . date('Y-m-d');
+                \Illuminate\Support\Facades\Cache::increment($cacheKey, 1);
+            } else {
+                UsageLog::logSuccess(
+                    $user->id,
+                    'pdf-converter',
+                    'convert',
+                    'html-to-pdf',
+                    [
+                        'input_format' => $fileExtension,
+                        'output_filename' => $pdfFilename,
+                        'file_size' => strlen($pdfOutput)
+                    ]
+                );
+            }
 
             header('Content-Type: application/pdf');
             header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
@@ -151,7 +167,7 @@ function processHtmlToPdf($files, $user) {
     }
 }
 
-function processPdfToWord($files, $user) {
+function processPdfToWord($files, $user, $isGuest) {
     foreach ($files as $file) {
         if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) !== 'pdf') {
             continue;
@@ -177,17 +193,24 @@ function processPdfToWord($files, $user) {
             unlink($tempFile); // Clean up temp file
 
             // Log successful conversion
-            UsageLog::logSuccess(
-                $user->id,
-                'pdf-converter',
-                'convert',
-                'pdf-to-word',
-                [
-                    'input_filename' => $file['name'],
-                    'output_filename' => $wordFilename,
-                    'file_size' => strlen($wordContent)
-                ]
-            );
+            if ($isGuest) {
+                // Increment guest conversion counter
+                $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                $cacheKey = 'guest_conversions_' . $ip . '_' . date('Y-m-d');
+                \Illuminate\Support\Facades\Cache::increment($cacheKey, 1);
+            } else {
+                UsageLog::logSuccess(
+                    $user->id,
+                    'pdf-converter',
+                    'convert',
+                    'pdf-to-word',
+                    [
+                        'input_filename' => $file['name'],
+                        'output_filename' => $wordFilename,
+                        'file_size' => strlen($wordContent)
+                    ]
+                );
+            }
 
             header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
             header('Content-Disposition: attachment; filename="' . $wordFilename . '"');
@@ -203,7 +226,7 @@ function processPdfToWord($files, $user) {
     }
 }
 
-function processPdfToText($files, $user) {
+function processPdfToText($files, $user, $isGuest) {
     foreach ($files as $file) {
         if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) !== 'pdf') {
             continue;
@@ -215,17 +238,24 @@ function processPdfToText($files, $user) {
             $textFilename = pathinfo($file['name'], PATHINFO_FILENAME) . '.txt';
 
             // Log successful conversion
-            UsageLog::logSuccess(
-                $user->id,
-                'pdf-converter',
-                'convert',
-                'pdf-to-text',
-                [
-                    'input_filename' => $file['name'],
-                    'output_filename' => $textFilename,
-                    'file_size' => strlen($text)
-                ]
-            );
+            if ($isGuest) {
+                // Increment guest conversion counter
+                $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                $cacheKey = 'guest_conversions_' . $ip . '_' . date('Y-m-d');
+                \Illuminate\Support\Facades\Cache::increment($cacheKey, 1);
+            } else {
+                UsageLog::logSuccess(
+                    $user->id,
+                    'pdf-converter',
+                    'convert',
+                    'pdf-to-text',
+                    [
+                        'input_filename' => $file['name'],
+                        'output_filename' => $textFilename,
+                        'file_size' => strlen($text)
+                    ]
+                );
+            }
 
             header('Content-Type: text/plain');
             header('Content-Disposition: attachment; filename="' . $textFilename . '"');
@@ -241,7 +271,7 @@ function processPdfToText($files, $user) {
     }
 }
 
-function processImagesToPdf($files, $user) {
+function processImagesToPdf($files, $user, $isGuest) {
     $dompdf = new Dompdf();
     $options = new Options();
     $options->set('isHtml5ParserEnabled', true);
@@ -271,17 +301,24 @@ function processImagesToPdf($files, $user) {
     $pdfFilename = 'images_combined.pdf';
 
     // Log successful conversion
-    UsageLog::logSuccess(
-        $user->id,
-        'pdf-converter',
-        'convert',
-        'images-to-pdf',
-        [
-            'image_count' => count($files),
-            'output_filename' => $pdfFilename,
-            'file_size' => strlen($pdfOutput)
-        ]
-    );
+    if ($isGuest) {
+        // Increment guest conversion counter
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $cacheKey = 'guest_conversions_' . $ip . '_' . date('Y-m-d');
+        \Illuminate\Support\Facades\Cache::increment($cacheKey, 1);
+    } else {
+        UsageLog::logSuccess(
+            $user->id,
+            'pdf-converter',
+            'convert',
+            'images-to-pdf',
+            [
+                'image_count' => count($files),
+                'output_filename' => $pdfFilename,
+                'file_size' => strlen($pdfOutput)
+            ]
+        );
+    }
 
     header('Content-Type: application/pdf');
     header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');

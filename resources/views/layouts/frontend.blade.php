@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ \App\Models\Content::getValue('site_name', config('app.name', 'Laravel')) }}</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,17 +15,18 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    @yield('styles')
 </head>
 <body style="font-family: 'Inter', sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); color: #ffffff; min-height: 100vh;">
     <!-- Header -->
     <header style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 215, 0, 0.2); position: fixed; top: 0; width: 100%; z-index: 1000; transition: all 0.3s ease;">
         <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center;">
-                <h1 style="font-size: 1.8rem; font-weight: 700; font-family: 'Playfair Display', serif; background: linear-gradient(45deg, #ffd700, #ffed4e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0;">PDF CONVERTER PRO</h1>
+                <h1 style="font-size: 1.8rem; font-weight: 700; font-family: 'Playfair Display', serif; background: linear-gradient(45deg, #ffd700, #ffed4e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0;">{{ \App\Models\Content::getValue('header_logo_text', 'PDF CONVERTER PRO') }}</h1>
             </div>
             <nav style="display: flex; gap: 2rem; align-items: center;">
-                <a href="{{ route('home') }}" style="color: #e0e0e0; text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative;" onmouseover="this.style.color='#ffd700'; this.style.transform='translateY(-2px)'" onmouseout="this.style.color='#e0e0e0'; this.style.transform='translateY(0)'">Home</a>
-                <a href="{{ route('pdf-converter') }}" style="color: #e0e0e0; text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative;" onmouseover="this.style.color='#ffd700'; this.style.transform='translateY(-2px)'" onmouseout="this.style.color='#e0e0e0'; this.style.transform='translateY(0)'">PDF Converter</a>
+                <a href="{{ route('home') }}" style="color: #e0e0e0; text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative;" onmouseover="this.style.color='#ffd700'; this.style.transform='translateY(-2px)'" onmouseout="this.style.color='#e0e0e0'; this.style.transform='translateY(0)'">{{ \App\Models\Content::getValue('nav_home', 'Home') }}</a>
+                <a href="{{ route('pdf-converter') }}" style="color: #e0e0e0; text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative;" onmouseover="this.style.color='#ffd700'; this.style.transform='translateY(-2px)'" onmouseout="this.style.color='#e0e0e0'; this.style.transform='translateY(0)'">{{ \App\Models\Content::getValue('nav_pdf_converter', 'PDF Converter') }}</a>
                 @auth
                     @if(auth()->user()->role === 'admin')
                         <a href="{{ route('admin.dashboard') }}" style="color: #e0e0e0; text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative;" onmouseover="this.style.color='#ffd700'; this.style.transform='translateY(-2px)'" onmouseout="this.style.color='#e0e0e0'; this.style.transform='translateY(0)'">Admin</a>
@@ -52,8 +53,8 @@
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
                 <div>
-                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 1rem; color: #ffd700;">PDF CONVERTER PRO</h3>
-                    <p style="color: #b0b0b0; line-height: 1.6;">Transform your documents with elegance and precision. Professional PDF conversion tools.</p>
+                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 1rem; color: #ffd700;">{{ \App\Models\Content::getValue('site_name', 'PDF CONVERTER PRO') }}</h3>
+                    <p style="color: #b0b0b0; line-height: 1.6;">{{ \App\Models\Content::getValue('footer_description', 'Transform your documents with elegance and precision. Professional PDF conversion tools.') }}</p>
                 </div>
                 <div>
                     <h4 style="font-weight: 600; margin-bottom: 1rem; color: #e0e0e0;">Quick Links</h4>
@@ -73,7 +74,7 @@
                 </div>
             </div>
             <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1rem;">
-                <p style="color: #888; font-size: 0.9rem;">&copy; {{ date('Y') }} PDF CONVERTER PRO. All rights reserved. | Premium Document Conversion</p>
+                <p style="color: #888; font-size: 0.9rem;">{{ \App\Models\Content::getValue('footer_copyright', '&copy; ' . date('Y') . ' PDF CONVERTER PRO. All rights reserved. | Premium Document Conversion') }}</p>
             </div>
         </div>
     </footer>
@@ -81,6 +82,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
+    @yield('scripts')
     <script>
         AOS.init({
             duration: 800,

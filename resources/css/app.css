@@ -1,10 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
 /* Basic CSS without Tailwind */
 
 body {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f3f4f6; /* bg-gray-100 */
+    background-color: #36454F; /* charcoal */
+    color: #C0C0C0; /* silver */
     min-height: 100vh;
 }
 
@@ -13,7 +16,7 @@ body {
 }
 
 .bg-gray-100 {
-    background-color: #f3f4f6;
+    background-color: #36454F; /* charcoal */
 }
 
 .bg-white {
@@ -59,7 +62,7 @@ body {
 
 /* Landing Page Styles */
 .bg-gradient-to-br {
-    background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+    background: linear-gradient(to bottom right, #36454F, #C0C0C0);
 }
 
 .min-h-screen {
@@ -126,11 +129,11 @@ body {
 }
 
 .bg-blue-600 {
-    background-color: #2563eb;
+    background-color: #C0C0C0; /* silver */
 }
 
 .text-white {
-    color: white;
+    color: #36454F; /* charcoal */
 }
 
 .px-8 {
@@ -152,7 +155,7 @@ body {
 }
 
 .hover\:bg-blue-700:hover {
-    background-color: #1d4ed8;
+    background-color: #A8A8A8; /* darker silver */
 }
 
 .bg-gray-200 {
@@ -251,7 +254,7 @@ body {
 }
 
 .text-blue-600 {
-    color: #2563eb;
+    color: #C0C0C0; /* silver */
 }
 
 .hover\:bg-gray-100:hover {
@@ -418,12 +421,12 @@ body {
 }
 
 .from-blue-500 {
-    --tw-gradient-from: #3b82f6;
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(59, 130, 246, 0));
+    --tw-gradient-from: #C0C0C0; /* silver */
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(192, 192, 192, 0));
 }
 
 .to-purple-600 {
-    --tw-gradient-to: #9333ea;
+    --tw-gradient-to: #36454F; /* charcoal */
 }
 
 .text-transparent {

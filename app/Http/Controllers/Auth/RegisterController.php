@@ -31,17 +31,34 @@ class RegisterController extends Controller
         ]);
 
         // Create free subscription for new user
-        $user->subscriptions()->create([
-            'plan_name' => 'Free',
-            'price' => 0.00,
-            'currency' => 'USD',
-            'billing_cycle' => 'monthly',
-            'conversion_limit' => 10, // 10 free conversions per month
-            'enabled_addons' => ['pdf-converter'], // Only PDF converter for free plan
-            'starts_at' => now(),
-            'ends_at' => null, // Never expires
-            'status' => 'active',
-        ]);
+        $freePlan = \App\Models\SubscriptionPlan::where('name', 'Free')->first();
+        if ($freePlan) {
+            $user->subscriptions()->create([
+                'subscription_plan_id' => $freePlan->id,
+                'plan_name' => $freePlan->name,
+                'price' => $freePlan->price,
+                'currency' => $freePlan->currency,
+                'billing_cycle' => $freePlan->billing_cycle,
+                'conversion_limit' => $freePlan->max_conversions_per_month,
+                'enabled_addons' => $freePlan->included_addons,
+                'starts_at' => now(),
+                'ends_at' => null, // Never expires
+                'status' => 'active',
+            ]);
+        } else {
+            // Fallback if no free plan exists
+            $user->subscriptions()->create([
+                'plan_name' => 'Free',
+                'price' => 0.00,
+                'currency' => 'USD',
+                'billing_cycle' => 'monthly',
+                'conversion_limit' => 10,
+                'enabled_addons' => ['pdf-converter'],
+                'starts_at' => now(),
+                'ends_at' => null,
+                'status' => 'active',
+            ]);
+        }
 
         Auth::login($user);
 

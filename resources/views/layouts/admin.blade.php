@@ -178,6 +178,16 @@
                 <span class="sidebar-text">Addons</span>
             </a>
 
+            <a href="{{ route('admin.subscription-plans') }}" class="sidebar-item {{ request()->routeIs('admin.subscription-plans*') ? 'active' : '' }}">
+                <span class="sidebar-icon">💳</span>
+                <span class="sidebar-text">Subscription Plans</span>
+            </a>
+
+            <a href="{{ route('admin.content-editor') }}" class="sidebar-item {{ request()->routeIs('admin.content*') ? 'active' : '' }}">
+                <span class="sidebar-icon">📝</span>
+                <span class="sidebar-text">Content Editor</span>
+            </a>
+
             <a href="{{ route('admin.analytics') }}" class="sidebar-item {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
                 <span class="sidebar-icon">📈</span>
                 <span class="sidebar-text">Analytics</span>

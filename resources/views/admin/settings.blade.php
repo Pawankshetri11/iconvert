@@ -44,6 +44,94 @@
     </form>
 </div>
 
+<!-- Payment Gateway Settings -->
+<div class="stat-card" style="margin-bottom: 2rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Payment Gateway Settings</h3>
+
+    <form method="POST" action="{{ route('admin.update-payment-gateways') }}">
+        @csrf
+
+        <!-- Razorpay -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+            <h4 style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">Razorpay</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">API Key</label>
+                    <input type="text" name="razorpay_key" value="{{ config('services.razorpay.key') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Secret Key</label>
+                    <input type="password" name="razorpay_secret" value="{{ config('services.razorpay.secret') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Cashfree -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+            <h4 style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">Cashfree</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">App ID</label>
+                    <input type="text" name="cashfree_app_id" value="{{ config('services.cashfree.app_id') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Secret Key</label>
+                    <input type="password" name="cashfree_secret" value="{{ config('services.cashfree.secret') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Stripe -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+            <h4 style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">Stripe</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Publishable Key</label>
+                    <input type="text" name="stripe_key" value="{{ config('services.stripe.key') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Secret Key</label>
+                    <input type="password" name="stripe_secret" value="{{ config('services.stripe.secret') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <!-- PayPal -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+            <h4 style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">PayPal</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Client ID</label>
+                    <input type="text" name="paypal_client_id" value="{{ config('services.paypal.client_id') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Client Secret</label>
+                    <input type="password" name="paypal_client_secret" value="{{ config('services.paypal.client_secret') }}" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Mode</label>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #e0e0e0;">
+                        <input type="radio" name="paypal_mode" value="sandbox" {{ config('services.paypal.mode') === 'sandbox' ? 'checked' : '' }}>
+                        <span>Sandbox</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #e0e0e0;">
+                        <input type="radio" name="paypal_mode" value="live" {{ config('services.paypal.mode') === 'live' ? 'checked' : '' }}>
+                        <span>Live</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button type="submit" style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #000; border: none; padding: 0.75rem 2rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Save Payment Settings
+            </button>
+        </div>
+    </form>
+</div>
+
 <!-- System Information -->
 <div class="stat-card" style="margin-bottom: 2rem;">
     <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">System Information</h3>

@@ -8,6 +8,7 @@ class Subscription extends Model
 {
     protected $fillable = [
         'user_id',
+        'subscription_plan_id',
         'plan_name',
         'price',
         'currency',
@@ -34,6 +35,14 @@ class Subscription extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the subscription plan.
+     */
+    public function plan()
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'subscription_plan_id');
     }
 
     /**

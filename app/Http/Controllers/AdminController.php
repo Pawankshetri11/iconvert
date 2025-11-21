@@ -82,6 +82,80 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Addon status updated.');
     }
 
+    public function installAddon(Request $request)
+    {
+        $request->validate([
+            'addon_zip' => 'required|file|mimes:zip|max:10240', // 10MB max
+        ]);
+
+        $file = $request->file('addon_zip');
+        $tempPath = $file->store('temp', 'local');
+
+        $zip = new \ZipArchive;
+        if ($zip->open(storage_path('app/' . $tempPath)) === TRUE) {
+            $extractPath = storage_path('app/temp/' . uniqid());
+            $zip->extractTo($extractPath);
+            $zip->close();
+
+            // Check for config.php
+            $configFile = $extractPath . '/config.php';
+            if (!file_exists($configFile)) {
+                // Cleanup
+                $this->deleteDirectory($extractPath);
+                unlink(storage_path('app/' . $tempPath));
+                return redirect()->back()->with('error', 'Invalid addon: config.php not found.');
+            }
+
+            $config = require $configFile;
+            if (empty($config['slug'])) {
+                $this->deleteDirectory($extractPath);
+                unlink(storage_path('app/' . $tempPath));
+                return redirect()->back()->with('error', 'Invalid addon: slug not defined in config.');
+            }
+
+            $addonDir = base_path('addons/' . $config['slug']);
+            if (is_dir($addonDir)) {
+                $this->deleteDirectory($extractPath);
+                unlink(storage_path('app/' . $tempPath));
+                return redirect()->back()->with('error', 'Addon already exists.');
+            }
+
+            // Move to addons directory
+            rename($extractPath, $addonDir);
+
+            // Cleanup
+            unlink(storage_path('app/' . $tempPath));
+
+            return redirect()->back()->with('success', 'Addon installed successfully.');
+        } else {
+            unlink(storage_path('app/' . $tempPath));
+            return redirect()->back()->with('error', 'Failed to open zip file.');
+        }
+    }
+
+    private function deleteDirectory($dir)
+    {
+        if (!file_exists($dir)) {
+            return true;
+        }
+
+        if (!is_dir($dir)) {
+            return unlink($dir);
+        }
+
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') {
+                continue;
+            }
+
+            if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+                return false;
+            }
+        }
+
+        return rmdir($dir);
+    }
+
     public function analytics()
     {
         // Get analytics data
@@ -160,6 +234,270 @@ class AdminController extends Controller
     {
         Cache::flush();
         return redirect()->back()->with('success', 'Cache cleared successfully.');
+    }
+
+    public function updatePaymentGateways(Request $request)
+    {
+        $request->validate([
+            'razorpay_key' => 'nullable|string|max:255',
+            'razorpay_secret' => 'nullable|string|max:255',
+            'cashfree_app_id' => 'nullable|string|max:255',
+            'cashfree_secret' => 'nullable|string|max:255',
+            'stripe_key' => 'nullable|string|max:255',
+            'stripe_secret' => 'nullable|string|max:255',
+            'paypal_client_id' => 'nullable|string|max:255',
+            'paypal_client_secret' => 'nullable|string|max:255',
+            'paypal_mode' => 'nullable|in:sandbox,live',
+        ]);
+
+        // Update .env file
+        $envPath = base_path('.env');
+        $envContent = file_get_contents($envPath);
+
+        // Razorpay
+        $envContent = $this->updateEnvValue($envContent, 'RAZORPAY_KEY', $request->razorpay_key);
+        $envContent = $this->updateEnvValue($envContent, 'RAZORPAY_SECRET', $request->razorpay_secret);
+
+        // Cashfree
+        $envContent = $this->updateEnvValue($envContent, 'CASHFREE_APP_ID', $request->cashfree_app_id);
+        $envContent = $this->updateEnvValue($envContent, 'CASHFREE_SECRET', $request->cashfree_secret);
+
+        // Stripe
+        $envContent = $this->updateEnvValue($envContent, 'STRIPE_KEY', $request->stripe_key);
+        $envContent = $this->updateEnvValue($envContent, 'STRIPE_SECRET', $request->stripe_secret);
+
+        // PayPal
+        $envContent = $this->updateEnvValue($envContent, 'PAYPAL_CLIENT_ID', $request->paypal_client_id);
+        $envContent = $this->updateEnvValue($envContent, 'PAYPAL_CLIENT_SECRET', $request->paypal_client_secret);
+        $envContent = $this->updateEnvValue($envContent, 'PAYPAL_MODE', $request->paypal_mode);
+
+        file_put_contents($envPath, $envContent);
+
+        // Clear config cache
+        Cache::flush();
+
+        return redirect()->back()->with('success', 'Payment gateway settings updated successfully.');
+    }
+
+    private function updateEnvValue($envContent, $key, $value)
+    {
+        $pattern = "/^{$key}=.*$/m";
+        $replacement = $key . '=' . ($value ? '"' . $value . '"' : '');
+        if (preg_match($pattern, $envContent)) {
+            return preg_replace($pattern, $replacement, $envContent);
+        } else {
+            return $envContent . "\n" . $replacement;
+        }
+    }
+
+    // Subscription Plan Management
+    public function subscriptionPlans()
+    {
+        $plans = \App\Models\SubscriptionPlan::ordered()->get();
+        return view('admin.subscription-plans', compact('plans'));
+    }
+
+    public function createSubscriptionPlan()
+    {
+        $addons = $this->getAvailableAddons();
+        return view('admin.subscription-plan-form', compact('addons'));
+    }
+
+    public function storeSubscriptionPlan(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'currency' => 'required|string|size:3',
+            'billing_cycle' => 'required|in:monthly,yearly',
+            'max_files_per_conversion' => 'required|integer|min:1',
+            'max_conversions_per_month' => 'required|integer|min:0',
+            'included_addons' => 'nullable|array',
+            'features' => 'nullable|array',
+            'is_popular' => 'boolean',
+            'sort_order' => 'integer',
+        ]);
+
+        \App\Models\SubscriptionPlan::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'currency' => $request->currency,
+            'billing_cycle' => $request->billing_cycle,
+            'max_files_per_conversion' => $request->max_files_per_conversion,
+            'max_conversions_per_month' => $request->max_conversions_per_month,
+            'included_addons' => $request->included_addons ?? [],
+            'features' => $request->features ?? [],
+            'is_popular' => $request->is_popular ?? false,
+            'sort_order' => $request->sort_order ?? 0,
+        ]);
+
+        return redirect()->route('admin.subscription-plans')->with('success', 'Subscription plan created successfully.');
+    }
+
+    public function editSubscriptionPlan(\App\Models\SubscriptionPlan $plan)
+    {
+        $addons = $this->getAvailableAddons();
+        return view('admin.subscription-plan-form', compact('plan', 'addons'));
+    }
+
+    public function updateSubscriptionPlan(Request $request, \App\Models\SubscriptionPlan $plan)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'currency' => 'required|string|size:3',
+            'billing_cycle' => 'required|in:monthly,yearly',
+            'max_files_per_conversion' => 'required|integer|min:1',
+            'max_conversions_per_month' => 'required|integer|min:0',
+            'included_addons' => 'nullable|array',
+            'features' => 'nullable|array',
+            'is_popular' => 'boolean',
+            'sort_order' => 'integer',
+        ]);
+
+        $plan->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'currency' => $request->currency,
+            'billing_cycle' => $request->billing_cycle,
+            'max_files_per_conversion' => $request->max_files_per_conversion,
+            'max_conversions_per_month' => $request->max_conversions_per_month,
+            'included_addons' => $request->included_addons ?? [],
+            'features' => $request->features ?? [],
+            'is_popular' => $request->is_popular ?? false,
+            'sort_order' => $request->sort_order ?? 0,
+        ]);
+
+        return redirect()->route('admin.subscription-plans')->with('success', 'Subscription plan updated successfully.');
+    }
+
+    public function toggleSubscriptionPlan(\App\Models\SubscriptionPlan $plan)
+    {
+        $plan->update(['is_active' => !$plan->is_active]);
+        return redirect()->back()->with('success', 'Plan status updated successfully.');
+    }
+
+    public function deleteSubscriptionPlan(\App\Models\SubscriptionPlan $plan)
+    {
+        // Check if plan has active subscriptions
+        if ($plan->subscriptions()->where('status', 'active')->exists()) {
+            return redirect()->back()->with('error', 'Cannot delete plan with active subscriptions.');
+        }
+
+        $plan->delete();
+        return redirect()->route('admin.subscription-plans')->with('success', 'Subscription plan deleted successfully.');
+    }
+
+    // User subscription handling
+    public function subscribe(\App\Models\SubscriptionPlan $plan, Request $request)
+    {
+        $user = auth()->user();
+
+        // Check if user already has an active subscription to this plan
+        $existingSubscription = $user->activeSubscription;
+        if ($existingSubscription && $existingSubscription->subscription_plan_id === $plan->id) {
+            return redirect()->back()->with('info', 'You are already subscribed to this plan.');
+        }
+
+        // For free plans, create subscription immediately
+        if ($plan->price == 0) {
+            // Cancel any existing active subscription
+            if ($existingSubscription) {
+                $existingSubscription->update(['status' => 'cancelled']);
+            }
+
+            // Create new subscription
+            $user->subscriptions()->create([
+                'subscription_plan_id' => $plan->id,
+                'plan_name' => $plan->name,
+                'price' => $plan->price,
+                'currency' => $plan->currency,
+                'billing_cycle' => $plan->billing_cycle,
+                'conversion_limit' => $plan->max_conversions_per_month,
+                'enabled_addons' => $plan->included_addons,
+                'starts_at' => now(),
+                'ends_at' => null, // Lifetime for free plans
+                'status' => 'active',
+            ]);
+
+            return redirect()->route('dashboard')->with('success', 'Successfully subscribed to ' . $plan->name . ' plan!');
+        }
+
+        // For paid plans, redirect to payment processing
+        // This would integrate with your payment gateway
+        return redirect()->route('pricing')->with('info', 'Payment integration for ' . $plan->name . ' plan coming soon!');
+    }
+
+    // Content Management
+    public function contentEditor()
+    {
+        $groups = \App\Models\Content::getGroups();
+        $contents = \App\Models\Content::active()->orderBy('group')->orderBy('key')->get()->groupBy('group');
+        return view('admin.content-editor', compact('groups', 'contents'));
+    }
+
+    public function updateContent(Request $request)
+    {
+        $request->validate([
+            'contents' => 'required|array',
+            'contents.*.key' => 'required|string',
+            'contents.*.value' => 'required|string',
+        ]);
+
+        foreach ($request->contents as $contentData) {
+            \App\Models\Content::where('key', $contentData['key'])
+                ->update(['value' => $contentData['value']]);
+        }
+
+        // Clear content cache
+        \App\Models\Content::clearCache();
+
+        return redirect()->back()->with('success', 'Content updated successfully.');
+    }
+
+    public function createContent(Request $request)
+    {
+        $request->validate([
+            'key' => 'required|string|unique:contents,key',
+            'group' => 'required|string',
+            'type' => 'required|in:text,html,json',
+            'value' => 'required|string',
+            'label' => 'nullable|string',
+            'description' => 'nullable|string',
+        ]);
+
+        \App\Models\Content::create([
+            'key' => $request->key,
+            'group' => $request->group,
+            'type' => $request->type,
+            'value' => $request->value,
+            'label' => $request->label,
+            'description' => $request->description,
+        ]);
+
+        \App\Models\Content::clearCache();
+
+        return redirect()->back()->with('success', 'Content item created successfully.');
+    }
+
+    public function deleteContent(\App\Models\Content $content)
+    {
+        $content->delete();
+        \App\Models\Content::clearCache();
+
+        return redirect()->back()->with('success', 'Content item deleted successfully.');
+    }
+
+    public function toggleContent(\App\Models\Content $content)
+    {
+        $content->update(['is_active' => !$content->is_active]);
+        \App\Models\Content::clearCache();
+
+        return redirect()->back()->with('success', 'Content status updated successfully.');
     }
 
     private function getAvailableAddons()
