@@ -1,7 +1,107 @@
 @extends('layouts.frontend')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/pdf-converter.css') }}">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    colors: {
+                        royal: {
+                            950: '#020202',
+                            900: '#050505',
+                            800: '#0a0a0a',
+                            card: '#0c0c0c',
+                        },
+                        gold: {
+                            400: '#ffed4e',
+                            500: '#ffd700',
+                            600: '#d4b200',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 20s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- Glass Panel --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #fff 20%, #ffd700 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        /* --- Section Separator --- */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0 1.5rem 0;
+        }
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(255,255,255,0.08), transparent);
+            margin-left: 1rem;
+        }
+
+        /* PDF Converter specific overrides */
+        .pdf-converter-page {
+            position: relative;
+            min-height: calc(100vh - 80px);
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -9,183 +109,333 @@
     <!-- Messages Container -->
     <div id="messages-container"></div>
 
-    <div class="pdf-container">
-        <div class="pdf-content">
+    <!-- Interactive Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none" style="top: 80px;">
+        <canvas id="meshCanvas" class="opacity-20"></canvas>
+        <div class="glow-orb w-[400px] h-[400px] bg-purple-900/15 top-20 left-0 animate-blob"></div>
+        <div class="glow-orb w-[400px] h-[400px] bg-[#ffd700]/8 bottom-0 right-0 animate-blob" style="animation-delay: 2s"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-16 pb-20 px-6">
+        <div class="max-w-[95%] mx-auto">
+
             <!-- Header -->
-            <div class="pdf-header" data-aos="fade-down" data-aos-duration="800">
-                <h1 class="pdf-title">PDF Tools Suite</h1>
-                <p class="pdf-subtitle">A complete set of tools to work with PDF files. Drag and drop your files or click to browse.</p>
+            <div class="text-center mb-16" data-aos="fade-down">
+                <h1 class="text-4xl md:text-6xl font-display font-bold text-white mb-4">
+                    Every tool you need to <br>
+                    <span class="text-gold-gradient">Master Your PDFs</span>
+                </h1>
+                <p class="text-zinc-400 max-w-2xl mx-auto text-lg font-light">
+                    Merge, split, compress, convert, rotate, unlock and watermark PDFs with just a few clicks.
+                </p>
             </div>
 
-            <!-- Tools Grid -->
-            <div class="tools-grid" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
-                <!-- PDF Conversion Tools -->
-                <div class="tool-card" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="300">
-                    <div class="tool-card-content">
-                        <div class="tool-icon" style="background: var(--gradient-primary);">
-                            <span>📄</span>
-                        </div>
-                        <h3 class="tool-title">PDF Converters</h3>
-                        <p class="tool-description">Transform PDFs into Word, Excel, PowerPoint, and more</p>
-                        <div class="tool-buttons">
-                            <button onclick="selectTool('pdf-to-word')" class="tool-button">PDF → Word</button>
-                            <button onclick="selectTool('pdf-to-excel')" class="tool-button">PDF → Excel</button>
-                            <button onclick="selectTool('pdf-to-ppt')" class="tool-button">PDF → PowerPoint</button>
-                            <button onclick="selectTool('pdf-to-text')" class="tool-button">PDF → Text</button>
-                            <button onclick="selectTool('pdf-to-html')" class="tool-button">PDF → HTML</button>
-                            <button onclick="selectTool('pdf-to-images')" class="tool-button">PDF → Images</button>
-                        </div>
-                    </div>
+            <!-- 1. ORGANIZE & OPTIMIZE -->
+            <div class="mb-16">
+                <div class="section-divider" data-aos="fade-right">
+                    <h2 class="text-[#ffd700] font-bold tracking-widest text-sm uppercase">Organize & Optimize</h2>
                 </div>
 
-                <!-- Document to PDF -->
-                <div class="tool-card" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="400">
-                    <div class="tool-card-content">
-                        <div class="tool-icon" style="background: var(--gradient-success);">
-                            <span>📝</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Merge -->
+                    <a href="{{ route('pdf-editor', 'pdf-merge') }}" class="glass-panel rounded-xl p-6 group cursor-pointer block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-500/20 transition-colors">
+                            <i data-lucide="files" class="w-6 h-6 text-red-400"></i>
                         </div>
-                        <h3 class="tool-title">Create PDFs</h3>
-                        <p class="tool-description">Transform documents into professional PDFs</p>
-                        <div class="tool-buttons">
-                            <button onclick="selectTool('word-to-pdf')" class="tool-button">Word → PDF</button>
-                            <button onclick="selectTool('excel-to-pdf')" class="tool-button">Excel → PDF</button>
-                            <button onclick="selectTool('ppt-to-pdf')" class="tool-button">PowerPoint → PDF</button>
-                            <button onclick="selectTool('html-to-pdf')" class="tool-button">HTML → PDF</button>
-                            <button onclick="selectTool('images-to-pdf')" class="tool-button">Images → PDF</button>
-                            <button onclick="selectTool('text-to-pdf')" class="tool-button">Text → PDF</button>
-                        </div>
-                    </div>
-                </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Merge PDF</h3>
+                        <p class="text-xs text-zinc-400">Combine PDFs in the order you want with the easiest PDF merger.</p>
+                    </a>
 
-                <!-- PDF Editor Tools -->
-                <div class="tool-card" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="500">
-                    <div class="tool-card-content">
-                        <div class="tool-icon" style="background: var(--gradient-secondary);">
-                            <span>✏️</span>
+                    <!-- Split -->
+                    <a href="{{ route('pdf-editor', 'pdf-split') }}" class="glass-panel rounded-xl p-6 group cursor-pointer block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-500/20 transition-colors">
+                            <i data-lucide="scissors" class="w-6 h-6 text-red-400"></i>
                         </div>
-                        <h3 class="tool-title">PDF Editor</h3>
-                        <p class="tool-description">Advanced PDF editing and modification tools</p>
-                        <div class="tool-buttons">
-                            <button onclick="selectTool('pdf-editor')" class="tool-button">PDF Editor</button>
-                            <button onclick="selectTool('pdf-rotate')" class="tool-button">Rotate PDF</button>
-                            <button onclick="selectTool('pdf-watermark')" class="tool-button">Add Watermark</button>
-                            <button onclick="selectTool('pdf-protect')" class="tool-button">Protect PDF</button>
-                            <button onclick="selectTool('pdf-unlock')" class="tool-button">Unlock PDF</button>
-                        </div>
-                    </div>
-                </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Split PDF</h3>
+                        <p class="text-xs text-zinc-400">Separate one page or a whole set for easy conversion into independent files.</p>
+                    </a>
 
-                <!-- PDF Utilities -->
-                <div class="tool-card" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="600">
-                    <div class="tool-card-content">
-                        <div class="tool-icon" style="background: var(--gradient-warning);">
-                            <span>🔧</span>
+                    <!-- Compress -->
+                    <a href="{{ route('pdf-editor', 'pdf-compress') }}" class="glass-panel rounded-xl p-6 group cursor-pointer block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4 group-hover:bg-green-500/20 transition-colors">
+                            <i data-lucide="minimize-2" class="w-6 h-6 text-green-400"></i>
                         </div>
-                        <h3 class="tool-title">PDF Utilities</h3>
-                        <p class="tool-description">Powerful tools to organize and optimize your PDFs</p>
-                        <div class="tool-buttons">
-                            <button onclick="selectTool('pdf-merge')" class="tool-button">Merge PDFs</button>
-                            <button onclick="selectTool('pdf-split')" class="tool-button">Split PDF</button>
-                            <button onclick="selectTool('pdf-compress')" class="tool-button">Compress PDF</button>
-                            <button onclick="selectTool('pdf-repair')" class="tool-button">Repair PDF</button>
+                        <h3 class="text-lg font-bold text-white mb-2">Compress PDF</h3>
+                        <p class="text-xs text-zinc-400">Reduce file size while optimizing for maximal PDF quality.</p>
+                    </a>
+
+                    <!-- Repair -->
+                    <a href="{{ route('pdf-editor', 'pdf-repair') }}" class="glass-panel rounded-xl p-6 group cursor-pointer block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4 group-hover:bg-orange-500/20 transition-colors">
+                            <i data-lucide="wrench" class="w-6 h-6 text-orange-400"></i>
                         </div>
-                    </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Repair PDF</h3>
+                        <p class="text-xs text-zinc-400">Recover data from a corrupted or damaged PDF document.</p>
+                    </a>
                 </div>
             </div>
+
+            <!-- 2. CONVERT TO PDF -->
+            <div class="mb-16">
+                <div class="section-divider" data-aos="fade-right">
+                    <h2 class="text-[#ffd700] font-bold tracking-widest text-sm uppercase">Convert To PDF</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                    <!-- JPG to PDF -->
+                    <a href="{{ route('pdf-editor', 'images-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="image" class="w-5 h-5 text-yellow-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">JPG to PDF</h3>
+                    </a>
+
+                    <!-- Word to PDF -->
+                    <a href="{{ route('pdf-editor', 'word-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="file-text" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">Word to PDF</h3>
+                    </a>
+
+                    <!-- PowerPoint to PDF -->
+                    <a href="{{ route('pdf-editor', 'ppt-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="presentation" class="w-5 h-5 text-orange-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PPT to PDF</h3>
+                    </a>
+
+                    <!-- Excel to PDF -->
+                    <a href="{{ route('pdf-editor', 'excel-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="table" class="w-5 h-5 text-green-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">Excel to PDF</h3>
+                    </a>
+
+                    <!-- HTML to PDF -->
+                    <a href="{{ route('pdf-editor', 'html-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-gray-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="code" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">HTML to PDF</h3>
+                    </a>
+
+                    <!-- Text to PDF -->
+                    <a href="{{ route('pdf-editor', 'text-to-pdf') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-3">
+                            <i data-lucide="align-left" class="w-5 h-5 text-zinc-300"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">Text to PDF</h3>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. CONVERT FROM PDF -->
+            <div class="mb-16">
+                <div class="section-divider" data-aos="fade-right">
+                    <h2 class="text-[#ffd700] font-bold tracking-widest text-sm uppercase">Convert From PDF</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                    <!-- PDF to JPG -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-images') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="image" class="w-5 h-5 text-yellow-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to JPG</h3>
+                    </a>
+
+                    <!-- PDF to Word -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-word') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="file-edit" class="w-5 h-5 text-blue-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to Word</h3>
+                    </a>
+
+                    <!-- PDF to PPT -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-ppt') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="presentation" class="w-5 h-5 text-orange-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to PPT</h3>
+                    </a>
+
+                    <!-- PDF to Excel -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-excel') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="table" class="w-5 h-5 text-green-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to Excel</h3>
+                    </a>
+
+                    <!-- PDF to HTML -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-html') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-gray-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="code" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to HTML</h3>
+                    </a>
+
+                    <!-- PDF to Text -->
+                    <a href="{{ route('pdf-editor', 'pdf-to-text') }}" class="glass-panel rounded-xl p-5 group cursor-pointer text-center flex flex-col items-center block" data-tilt>
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-3">
+                            <i data-lucide="align-left" class="w-5 h-5 text-zinc-300"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white">PDF to Text</h3>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. EDIT & SECURITY -->
+            <div class="mb-16">
+                <div class="section-divider" data-aos="fade-right">
+                    <h2 class="text-[#ffd700] font-bold tracking-widest text-sm uppercase">Edit & Security</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <!-- Rotate -->
+                    <a href="{{ route('pdf-editor', 'pdf-rotate') }}" class="glass-panel rounded-xl p-5 group cursor-pointer flex flex-col items-center text-center block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="rotate-cw" class="w-6 h-6 text-purple-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-1">Rotate PDF</h3>
+                        <p class="text-[10px] text-zinc-500">Rotate pages individually</p>
+                    </a>
+
+                    <!-- Add Watermark -->
+                    <a href="{{ route('pdf-editor', 'pdf-watermark') }}" class="glass-panel rounded-xl p-5 group cursor-pointer flex flex-col items-center text-center block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="stamp" class="w-6 h-6 text-purple-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-1">Add Watermark</h3>
+                        <p class="text-[10px] text-zinc-500">Stamp text or images</p>
+                    </a>
+
+                    <!-- Edit PDF -->
+                    <a href="{{ route('pdf-editor', 'pdf-editor') }}" class="glass-panel rounded-xl p-5 group cursor-pointer flex flex-col items-center text-center border-[#ffd700]/20 block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-[#ffd700]/10 flex items-center justify-center mb-3">
+                            <i data-lucide="pen-tool" class="w-6 h-6 text-[#ffd700]"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-1">Edit PDF</h3>
+                        <p class="text-[10px] text-zinc-500">Add text, shapes & images</p>
+                    </a>
+
+                    <!-- Protect -->
+                    <a href="{{ route('pdf-editor', 'pdf-protect') }}" class="glass-panel rounded-xl p-5 group cursor-pointer flex flex-col items-center text-center block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="lock" class="w-6 h-6 text-blue-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-1">Protect PDF</h3>
+                        <p class="text-[10px] text-zinc-500">Encrypt with password</p>
+                    </a>
+
+                    <!-- Unlock -->
+                    <a href="{{ route('pdf-editor', 'pdf-unlock') }}" class="glass-panel rounded-xl p-5 group cursor-pointer flex flex-col items-center text-center block" data-tilt>
+                        <div class="w-12 h-12 rounded-lg bg-pink-500/10 flex items-center justify-center mb-3">
+                            <i data-lucide="unlock" class="w-6 h-6 text-pink-400"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white mb-1">Unlock PDF</h3>
+                        <p class="text-[10px] text-zinc-500">Remove security</p>
+                    </a>
+                </div>
+            </div>
+
         </div>
-    </div>
-
-    <!-- Tool Modal -->
-    <div id="tool-modal" class="tool-modal" role="dialog" aria-modal="true" aria-labelledby="tool-title">
-        <div id="tool-interface" class="tool-interface">
-            <!-- Tool Header -->
-            <div class="tool-header">
-                <div>
-                    <h2 id="tool-title" class="tool-modal-title">Select a Tool</h2>
-                    <p id="tool-description" class="tool-modal-description">Choose a tool from the list to get started</p>
-                </div>
-                <button onclick="closeTool()" class="close-button" aria-label="Close modal">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Tool Options -->
-            <div id="tool-options" class="mb-6"></div>
-
-            <!-- File Upload Area -->
-            <div id="upload-section" class="mb-6">
-                <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="File upload area">
-                    <div class="text-blue-500 mb-4" aria-hidden="true">
-                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-xl text-white font-semibold mb-2">Drop your files here or click to browse</div>
-                    <div class="text-gray-400 mb-4" id="uploadSubtext">Select files to process</div>
-                    <input type="file" id="fileInput" class="hidden" multiple aria-label="File input">
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-bold transition-colors" onclick="document.getElementById('fileInput').click()" aria-label="Choose files">Choose Files</button>
-                </div>
-            </div>
-
-            <!-- File List -->
-            <div class="file-list mb-6" id="fileList"></div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="convert-btn" id="convertBtn" disabled onclick="processTool()" aria-label="Process selected files">
-                    <span class="button-text">Process Files</span>
-                    <span class="loading-spinner">
-                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                </button>
-                <button onclick="closeTool()" class="cancel-btn" aria-label="Cancel and close">Cancel</button>
-            </div>
-
-            <!-- Progress -->
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-status">
-                    <div class="status-text" id="status">Processing your files...</div>
-                </div>
-            </div>
-
-            <!-- Usage Limits Display -->
-            @guest
-                <div class="usage-limit-display free-tier">
-                    <p>Free Access: 3 conversions per day</p>
-                    <p class="text-sm">Register for unlimited access and more features!</p>
-                    <a href="{{ route('register') }}" class="register-btn">Register Now</a>
-                </div>
-            @else
-                @php
-                    $remaining = auth()->user()->getRemainingConversions();
-                @endphp
-                <div class="usage-limit-display {{ $remaining === -1 ? 'premium-tier' : ($remaining > 0 ? 'standard-tier' : 'limit-reached') }}">
-                    @if($remaining === -1)
-                        <p>Unlimited Conversions</p>
-                        <p class="text-sm">Enjoy unlimited access with your premium plan!</p>
-                    @elseif($remaining > 0)
-                        <p>{{ $remaining }} conversions remaining this month</p>
-                        <p class="text-sm">Upgrade for unlimited access!</p>
-                    @else
-                        <p>Conversion limit reached</p>
-                        <p class="text-sm">Upgrade your plan to continue converting!</p>
-                        <a href="{{ route('pricing') }}" class="upgrade-btn">Upgrade Plan</a>
-                    @endif
-                </div>
-            @endguest
-        </div>
-    </div>
+    </main>
 </div>
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/pdf-converter.js') }}"></script>
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+
+    <script>
+        // Init AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+
+        // Init Icons
+        lucide.createIcons();
+
+        // Init Tilt
+        VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+            max: 15,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.1
+        });
+
+        // --- Background Animation ---
+        const canvas = document.getElementById('meshCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let points = [];
+        const target = { x: 0, y: 0 };
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            initPoints();
+        }
+
+        function initPoints() {
+            points = [];
+            const count = Math.floor(width * height / 15000);
+            for (let i = 0; i < count; i++) {
+                points.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    size: Math.random() * 2
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 0.8;
+
+            for (let i = 0; i < points.length; i++) {
+                let p = points[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+                ctx.fill();
+
+                for (let j = i + 1; j < points.length; j++) {
+                    const p2 = points[j];
+                    const d2 = (p.x - p2.x)**2 + (p.y - p2.y)**2;
+                    if (d2 < 9000) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    </script>
 @endsection

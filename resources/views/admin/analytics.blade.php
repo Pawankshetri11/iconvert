@@ -3,56 +3,56 @@
 @section('title', 'Analytics')
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.5rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Analytics Dashboard</h2>
-    <p style="color: #b0b0b0;">Monitor user activity, conversions, and system performance</p>
+<div class="mb-4">
+    <h2 class="text-xl font-semibold text-gold-400 mb-2">Analytics Dashboard</h2>
+    <p class="text-gray-400 text-sm">Monitor user activity, conversions, and system performance</p>
 </div>
 
 <!-- Analytics Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">📈</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">📈</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #ffd700;">{{ $analytics['user_registrations']->sum('count') ?? 0 }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">New Users (30 days)</div>
+                <div class="text-xl font-bold text-gold-400">{{ $analytics['user_registrations']->sum('count') ?? 0 }}</div>
+                <div class="text-gray-400 text-sm">New Users (30 days)</div>
             </div>
         </div>
     </div>
 
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">🔄</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">🔄</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #ffd700;">{{ $analytics['conversions_by_type']->sum('count') ?? 0 }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">Total Conversions</div>
+                <div class="text-xl font-bold text-gold-400">{{ $analytics['conversions_by_type']->sum('count') ?? 0 }}</div>
+                <div class="text-gray-400 text-sm">Total Conversions</div>
             </div>
         </div>
     </div>
 
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">👑</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">👑</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #ffd700;">{{ $analytics['top_users']->first()->usage_logs_count ?? 0 }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">Top User Conversions</div>
+                <div class="text-xl font-bold text-gold-400">{{ $analytics['top_users']->first()->usage_logs_count ?? 0 }}</div>
+                <div class="text-gray-400 text-sm">Top User Conversions</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Charts Section -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <!-- User Registrations Chart -->
     <div class="stat-card">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">User Registrations (Last 30 Days)</h3>
-        <div style="height: 200px; display: flex; align-items: end; gap: 2px;">
+        <h3 class="text-lg font-semibold text-gold-400 mb-3">User Registrations (Last 30 Days)</h3>
+        <div class="h-32 flex items-end gap-1">
             @php
                 $maxCount = $analytics['user_registrations']->max('count') ?: 1;
             @endphp
             @foreach($analytics['user_registrations'] as $registration)
-                <div style="flex: 1; background: linear-gradient(to top, #ffd700, #ffed4e); height: {{ ($registration->count / $maxCount) * 180 }}px; border-radius: 2px 2px 0 0; position: relative;" title="{{ $registration->date }}: {{ $registration->count }} users">
-                    <div style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: #b0b0b0; white-space: nowrap;">{{ \Carbon\Carbon::parse($registration->date)->format('M d') }}</div>
+                <div class="flex-1 bg-gradient-to-t from-gold-400 to-yellow-300 rounded-t-sm relative" style="height: {{ ($registration->count / $maxCount) * 100 }}%" title="{{ $registration->date }}: {{ $registration->count }} users">
+                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 whitespace-nowrap">{{ \Carbon\Carbon::parse($registration->date)->format('M d') }}</div>
                 </div>
             @endforeach
         </div>
@@ -60,16 +60,16 @@
 
     <!-- Conversion Types -->
     <div class="stat-card">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Conversions by Type</h3>
-        <div style="space-y: 1rem;">
+        <h3 class="text-lg font-semibold text-gold-400 mb-3">Conversions by Type</h3>
+        <div class="space-y-2">
             @foreach($analytics['conversions_by_type'] as $conversion)
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #e0e0e0; text-transform: capitalize;">{{ str_replace('-', ' ', $conversion->type) }}</span>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 100px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden;">
-                            <div style="width: {{ ($conversion->count / ($analytics['conversions_by_type']->max('count') ?: 1)) * 100 }}%; height: 100%; background: linear-gradient(45deg, #ffd700, #ffed4e);"></div>
+                <div class="flex justify-between items-center">
+                    <span class="text-white text-sm capitalize">{{ str_replace('-', ' ', $conversion->type) }}</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-gold-400 to-yellow-300" style="width: {{ ($conversion->count / ($analytics['conversions_by_type']->max('count') ?: 1)) * 100 }}%"></div>
                         </div>
-                        <span style="color: #ffd700; font-weight: 600; min-width: 30px; text-align: right;">{{ $conversion->count }}</span>
+                        <span class="text-gold-400 font-semibold text-sm w-8 text-right">{{ $conversion->count }}</span>
                     </div>
                 </div>
             @endforeach
@@ -78,21 +78,21 @@
 </div>
 
 <!-- Top Users -->
-<div class="stat-card">
-    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Top Users by Conversions</h3>
-    <div style="space-y: 1rem;">
+<div class="stat-card mb-4">
+    <h3 class="text-lg font-semibold text-gold-400 mb-3">Top Users by Conversions</h3>
+    <div class="space-y-2">
         @foreach($analytics['top_users'] as $index => $user)
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #ffd700, #ffed4e); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000;">{{ $index + 1 }}</div>
+            <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-gold-400 to-yellow-300 rounded-full flex items-center justify-center font-bold text-black text-sm">{{ $index + 1 }}</div>
                     <div>
-                        <div style="font-weight: 600; color: #e0e0e0;">{{ $user->name }}</div>
-                        <div style="font-size: 0.8rem; color: #b0b0b0;">{{ $user->email }}</div>
+                        <div class="font-medium text-white text-sm">{{ $user->name }}</div>
+                        <div class="text-xs text-gray-400">{{ $user->email }}</div>
                     </div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 1.2rem; font-weight: 700; color: #ffd700;">{{ $user->usage_logs_count }}</div>
-                    <div style="font-size: 0.8rem; color: #b0b0b0;">conversions</div>
+                <div class="text-right">
+                    <div class="text-lg font-bold text-gold-400">{{ $user->usage_logs_count }}</div>
+                    <div class="text-xs text-gray-400">conversions</div>
                 </div>
             </div>
         @endforeach
@@ -100,25 +100,25 @@
 </div>
 
 <!-- System Performance -->
-<div class="stat-card" style="margin-top: 2rem;">
-    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">System Performance</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #22c55e;">{{ number_format(memory_get_peak_usage() / 1024 / 1024, 2) }} MB</div>
-            <div style="color: #b0b0b0; font-size: 0.9rem;">Peak Memory</div>
+<div class="stat-card">
+    <h3 class="text-lg font-semibold text-gold-400 mb-3">System Performance</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="text-center p-3 bg-white/5 rounded-lg">
+            <div class="text-2xl mb-1">⚡</div>
+            <div class="text-lg font-bold text-green-400">{{ number_format(memory_get_peak_usage() / 1024 / 1024, 2) }} MB</div>
+            <div class="text-gray-400 text-sm">Peak Memory</div>
         </div>
 
-        <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🕐</div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;">{{ number_format(microtime(true) - LARAVEL_START, 4) }}s</div>
-            <div style="color: #b0b0b0; font-size: 0.9rem;">Load Time</div>
+        <div class="text-center p-3 bg-white/5 rounded-lg">
+            <div class="text-2xl mb-1">🕐</div>
+            <div class="text-lg font-bold text-blue-400">{{ number_format(microtime(true) - LARAVEL_START, 4) }}s</div>
+            <div class="text-gray-400 text-sm">Load Time</div>
         </div>
 
-        <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💾</div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #f59e0b;">{{ \Illuminate\Support\Facades\DB::table('information_schema.tables')->where('table_schema', config('database.connections.mysql.database'))->count() }}</div>
-            <div style="color: #b0b0b0; font-size: 0.9rem;">Database Tables</div>
+        <div class="text-center p-3 bg-white/5 rounded-lg">
+            <div class="text-2xl mb-1">💾</div>
+            <div class="text-lg font-bold text-yellow-400">{{ \Illuminate\Support\Facades\DB::table('information_schema.tables')->where('table_schema', config('database.connections.mysql.database'))->count() }}</div>
+            <div class="text-gray-400 text-sm">Database Tables</div>
         </div>
     </div>
 </div>

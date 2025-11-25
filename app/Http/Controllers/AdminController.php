@@ -34,7 +34,8 @@ class AdminController extends Controller
     public function users()
     {
         $users = User::withCount('usageLogs')->paginate(20);
-        return view('admin.users', compact('users'));
+        $subscriptionPlans = \App\Models\SubscriptionPlan::active()->get();
+        return view('admin.users', compact('users', 'subscriptionPlans'));
     }
 
     public function updateUserRole(Request $request, User $user)
@@ -46,6 +47,38 @@ class AdminController extends Controller
         $user->update(['role' => $request->role]);
 
         return redirect()->back()->with('success', 'User role updated successfully.');
+    }
+
+    public function assignSubscription(Request $request, User $user)
+    {
+        $request->validate([
+            'subscription_plan_id' => 'nullable|exists:subscription_plans,id'
+        ]);
+
+        // Cancel any existing active subscription
+        if ($user->activeSubscription) {
+            $user->activeSubscription->update(['status' => 'cancelled']);
+        }
+
+        if ($request->subscription_plan_id) {
+            $plan = \App\Models\SubscriptionPlan::find($request->subscription_plan_id);
+
+            // Create new subscription
+            $user->subscriptions()->create([
+                'subscription_plan_id' => $plan->id,
+                'plan_name' => $plan->name,
+                'price' => $plan->price,
+                'currency' => $plan->currency,
+                'billing_cycle' => $plan->billing_cycle,
+                'conversion_limit' => $plan->max_conversions_per_month,
+                'enabled_addons' => $plan->included_addons,
+                'starts_at' => now(),
+                'ends_at' => null, // Admin assigned, no end date
+                'status' => 'active',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'User subscription updated successfully.');
     }
 
     public function deleteUser(User $user)
@@ -248,6 +281,9 @@ class AdminController extends Controller
             'paypal_client_id' => 'nullable|string|max:255',
             'paypal_client_secret' => 'nullable|string|max:255',
             'paypal_mode' => 'nullable|in:sandbox,live',
+            'manual_qr_url' => 'nullable|url|max:500',
+            'manual_qr_instructions' => 'nullable|string|max:1000',
+            'manual_qr_enabled' => 'boolean',
         ]);
 
         // Update .env file
@@ -270,6 +306,11 @@ class AdminController extends Controller
         $envContent = $this->updateEnvValue($envContent, 'PAYPAL_CLIENT_ID', $request->paypal_client_id);
         $envContent = $this->updateEnvValue($envContent, 'PAYPAL_CLIENT_SECRET', $request->paypal_client_secret);
         $envContent = $this->updateEnvValue($envContent, 'PAYPAL_MODE', $request->paypal_mode);
+
+        // Manual QR Payment
+        $envContent = $this->updateEnvValue($envContent, 'MANUAL_QR_URL', $request->manual_qr_url);
+        $envContent = $this->updateEnvValue($envContent, 'MANUAL_QR_INSTRUCTIONS', $request->manual_qr_instructions);
+        $envContent = $this->updateEnvValue($envContent, 'MANUAL_QR_ENABLED', $request->manual_qr_enabled ? 'true' : 'false');
 
         file_put_contents($envPath, $envContent);
 
@@ -393,6 +434,18 @@ class AdminController extends Controller
     }
 
     // User subscription handling
+    public function cancelSubscription(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->activeSubscription) {
+            $user->activeSubscription->update(['status' => 'cancelled']);
+            return redirect()->back()->with('success', 'Your subscription has been cancelled successfully.');
+        }
+
+        return redirect()->back()->with('error', 'No active subscription found.');
+    }
+
     public function subscribe(\App\Models\SubscriptionPlan $plan, Request $request)
     {
         $user = auth()->user();

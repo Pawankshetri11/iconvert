@@ -124,6 +124,27 @@
             </div>
         </div>
 
+        <!-- Manual QR Payment -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+            <h4 style="color: #ffd700; font-weight: 600; margin-bottom: 1rem;">Manual QR Payment</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">QR Code Image URL</label>
+                    <input type="url" name="manual_qr_url" value="{{ config('services.manual_qr.url', '') }}" placeholder="https://example.com/qr-code.png" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                </div>
+                <div>
+                    <label style="display: block; color: #e0e0e0; font-weight: 500; margin-bottom: 0.5rem;">Payment Instructions</label>
+                    <textarea name="manual_qr_instructions" placeholder="Scan QR code and send payment to complete transaction" rows="3" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; color: #e0e0e0; font-size: 1rem; resize: vertical;">{{ config('services.manual_qr.instructions', '') }}</textarea>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: #e0e0e0;">
+                    <input type="checkbox" name="manual_qr_enabled" value="1" {{ config('services.manual_qr.enabled', false) ? 'checked' : '' }}>
+                    <span>Enable Manual QR Payment</span>
+                </label>
+            </div>
+        </div>
+
         <div style="margin-top: 2rem;">
             <button type="submit" style="background: linear-gradient(45deg, #ffd700, #ffed4e); color: #000; border: none; padding: 0.75rem 2rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 Save Payment Settings

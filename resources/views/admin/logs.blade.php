@@ -3,30 +3,30 @@
 @section('title', 'System Logs')
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.5rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">System Logs</h2>
-    <p style="color: #b0b0b0;">Monitor system activity and debug information</p>
+<div class="mb-4">
+    <h2 class="text-xl font-semibold text-gold-400 mb-2">System Logs</h2>
+    <p class="text-gray-400 text-sm">Monitor system activity and debug information</p>
 </div>
 
 <!-- Log Controls -->
-<div class="stat-card" style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700;">Recent Log Entries</h3>
-        <div style="display: flex; gap: 1rem;">
-            <button onclick="refreshLogs()" style="background: linear-gradient(45deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 0.5rem 1rem; border-radius: 25px; cursor: pointer; font-weight: 500;">Refresh</button>
-            <button onclick="clearLogs()" style="background: linear-gradient(45deg, #ef4444, #dc2626); color: white; border: none; padding: 0.5rem 1rem; border-radius: 25px; cursor: pointer; font-weight: 500;">Clear Logs</button>
+<div class="stat-card mb-4">
+    <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold text-gold-400">Recent Log Entries</h3>
+        <div class="flex gap-2">
+            <button onclick="refreshLogs()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">Refresh</button>
+            <button onclick="clearLogs()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">Clear Logs</button>
         </div>
     </div>
 
-    <div style="background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.9rem; max-height: 500px; overflow-y: auto;" id="logContainer">
+    <div class="bg-black/50 rounded-lg p-3 font-mono text-sm max-h-64 overflow-y-auto" id="logContainer">
         @if(empty($logs))
-            <div style="color: #b0b0b0; text-align: center; padding: 2rem;">
+            <div class="text-gray-400 text-center py-8">
                 No log entries found. Logs will appear here as system activity occurs.
             </div>
         @else
             @foreach(array_reverse($logs) as $log)
-                <div style="margin-bottom: 0.5rem; padding: 0.5rem; border-radius: 4px; background: rgba(255, 255, 255, 0.05);">
-                    <div style="color: #888; font-size: 0.8rem; margin-bottom: 0.25rem;">{{ $log }}</div>
+                <div class="mb-1 p-2 rounded bg-white/5">
+                    <div class="text-gray-500 text-xs">{{ $log }}</div>
                 </div>
             @endforeach
         @endif
@@ -34,64 +34,64 @@
 </div>
 
 <!-- Log Statistics -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">📄</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">📄</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #ffd700;">{{ count($logs) }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">Log Entries</div>
+                <div class="text-xl font-bold text-gold-400">{{ count($logs) }}</div>
+                <div class="text-gray-400 text-sm">Log Entries</div>
             </div>
         </div>
     </div>
 
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">📊</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">📊</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">{{ file_exists(storage_path('logs/laravel.log')) ? number_format(filesize(storage_path('logs/laravel.log')) / 1024, 1) . ' KB' : '0 KB' }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">Log File Size</div>
+                <div class="text-xl font-bold text-green-400">{{ file_exists(storage_path('logs/laravel.log')) ? number_format(filesize(storage_path('logs/laravel.log')) / 1024, 1) . ' KB' : '0 KB' }}</div>
+                <div class="text-gray-400 text-sm">Log File Size</div>
             </div>
         </div>
     </div>
 
     <div class="stat-card">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="font-size: 2rem;">⚠️</div>
+        <div class="flex items-center gap-3">
+            <div class="text-2xl">⚠️</div>
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">{{ count(array_filter($logs, fn($log) => str_contains(strtolower($log), 'error') || str_contains(strtolower($log), 'exception'))) }}</div>
-                <div style="color: #b0b0b0; font-size: 0.9rem;">Error Entries</div>
+                <div class="text-xl font-bold text-yellow-400">{{ count(array_filter($logs, fn($log) => str_contains(strtolower($log), 'error') || str_contains(strtolower($log), 'exception'))) }}</div>
+                <div class="text-gray-400 text-sm">Error Entries</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Log Levels Info -->
-<div class="stat-card" style="margin-top: 2rem;">
-    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Log Levels</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-        <div style="text-align: center; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚨</div>
-            <div style="font-weight: 600; color: #ef4444;">ERROR</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">Critical errors</div>
+<div class="stat-card">
+    <h3 class="text-lg font-semibold text-gold-400 mb-3">Log Levels</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="text-center p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <div class="text-xl mb-1">🚨</div>
+            <div class="font-semibold text-red-400">ERROR</div>
+            <div class="text-xs text-gray-400">Critical errors</div>
         </div>
 
-        <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3);">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
-            <div style="font-weight: 600; color: #f59e0b;">WARNING</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">Warnings</div>
+        <div class="text-center p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <div class="text-xl mb-1">⚠️</div>
+            <div class="font-semibold text-yellow-400">WARNING</div>
+            <div class="text-xs text-gray-400">Warnings</div>
         </div>
 
-        <div style="text-align: center; padding: 1rem; background: rgba(34, 197, 94, 0.1); border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.3);">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">ℹ️</div>
-            <div style="font-weight: 600; color: #22c55e;">INFO</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">General info</div>
+        <div class="text-center p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div class="text-xl mb-1">ℹ️</div>
+            <div class="font-semibold text-green-400">INFO</div>
+            <div class="text-xs text-gray-400">General info</div>
         </div>
 
-        <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
-            <div style="font-weight: 600; color: #3b82f6;">DEBUG</div>
-            <div style="font-size: 0.8rem; color: #b0b0b0;">Debug info</div>
+        <div class="text-center p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <div class="text-xl mb-1">🔍</div>
+            <div class="font-semibold text-blue-400">DEBUG</div>
+            <div class="text-xs text-gray-400">Debug info</div>
         </div>
     </div>
 </div>

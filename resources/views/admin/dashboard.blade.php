@@ -4,91 +4,91 @@
 
 @section('content')
 <!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="stat-card">
-        <div class="stat-number">{{ $stats['total_users'] ?? 0 }}</div>
-        <div class="stat-label">Total Users</div>
+        <div class="stat-number text-lg md:text-2xl">{{ $stats['total_users'] ?? 0 }}</div>
+        <div class="stat-label text-xs md:text-sm">Total Users</div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-number">{{ $stats['active_users'] ?? 0 }}</div>
-        <div class="stat-label">Active Users</div>
+        <div class="stat-number text-lg md:text-2xl">{{ $stats['active_users'] ?? 0 }}</div>
+        <div class="stat-label text-xs md:text-sm">Active Users</div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-number">{{ $stats['total_conversions'] ?? 0 }}</div>
-        <div class="stat-label">Total Conversions</div>
+        <div class="stat-number text-lg md:text-2xl">{{ $stats['total_conversions'] ?? 0 }}</div>
+        <div class="stat-label text-xs md:text-sm">Conversions</div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-number">{{ $stats['active_addons'] ?? 0 }}</div>
-        <div class="stat-label">Active Addons</div>
+        <div class="stat-number text-lg md:text-2xl">{{ $stats['active_addons'] ?? 0 }}</div>
+        <div class="stat-label text-xs md:text-sm">Active Addons</div>
     </div>
 </div>
 
-<!-- Recent Activity -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+<!-- Recent Activity & System Status -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <!-- Recent Users -->
     <div class="stat-card">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Recent Users</h3>
-        <div style="space-y: 1rem;">
+        <h3 class="text-lg font-semibold text-gold-400 mb-3">Recent Users</h3>
+        <div class="space-y-2">
             @forelse($recentUsers ?? [] as $user)
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
-                    <div>
-                        <div style="font-weight: 500; color: #e0e0e0;">{{ $user->name }}</div>
-                        <div style="font-size: 0.8rem; color: #b0b0b0;">{{ $user->email }}</div>
+                <div class="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-white text-sm truncate">{{ $user->name }}</div>
+                        <div class="text-xs text-gray-400 truncate">{{ $user->email }}</div>
                     </div>
-                    <div style="font-size: 0.8rem; color: #ffd700;">{{ $user->created_at->diffForHumans() }}</div>
+                    <div class="text-xs text-gold-400 ml-2 flex-shrink-0">{{ $user->created_at->diffForHumans() }}</div>
                 </div>
             @empty
-                <p style="color: #b0b0b0; text-align: center; padding: 2rem;">No recent users</p>
+                <p class="text-gray-400 text-center py-4 text-sm">No recent users</p>
             @endforelse
         </div>
     </div>
 
     <!-- System Status -->
     <div class="stat-card">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">System Status</h3>
-        <div style="space-y: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #e0e0e0;">Database</span>
-                <span style="color: #22c55e;">✓ Connected</span>
+        <h3 class="text-lg font-semibold text-gold-400 mb-3">System Status</h3>
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <span class="text-white text-sm">Database</span>
+                <span class="text-green-400 text-sm">✓ Connected</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #e0e0e0;">File System</span>
-                <span style="color: #22c55e;">✓ Operational</span>
+            <div class="flex justify-between items-center">
+                <span class="text-white text-sm">File System</span>
+                <span class="text-green-400 text-sm">✓ Operational</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #e0e0e0;">Cache</span>
-                <span style="color: #22c55e;">✓ Working</span>
+            <div class="flex justify-between items-center">
+                <span class="text-white text-sm">Cache</span>
+                <span class="text-green-400 text-sm">✓ Working</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #e0e0e0;">Queue</span>
-                <span style="color: #22c55e;">✓ Active</span>
+            <div class="flex justify-between items-center">
+                <span class="text-white text-sm">Queue</span>
+                <span class="text-green-400 text-sm">✓ Active</span>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Addon Management -->
-<div class="stat-card">
-    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Addon Management</h3>
-    <p style="color: #b0b0b0; margin-bottom: 2rem;">Control which addons are available to users</p>
+<div class="stat-card mb-4">
+    <h3 class="text-lg font-semibold text-gold-400 mb-2">Addon Management</h3>
+    <p class="text-gray-400 text-sm mb-4">Control which addons are available to users</p>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         @foreach($addons as $slug => $addon)
-            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 1.5rem; border: 1px solid rgba(255, 215, 0, 0.2);">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <div>
-                        <h4 style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">{{ $addon['name'] ?? ucfirst(str_replace('-', ' ', $slug)) }}</h4>
-                        <p style="color: #b0b0b0; font-size: 0.9rem;">{{ $addon['description'] ?? 'No description available.' }}</p>
+            <div class="bg-white/5 border border-gold-400/20 rounded-lg p-3">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-semibold text-white text-sm truncate">{{ $addon['name'] ?? ucfirst(str_replace('-', ' ', $slug)) }}</h4>
+                        <p class="text-gray-400 text-xs truncate">{{ $addon['description'] ?? 'No description available.' }}</p>
                     </div>
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: {{ $addon['enabled'] ? '#22c55e' : '#ef4444' }};"></div>
+                    <div class="w-3 h-3 rounded-full {{ $addon['enabled'] ? 'bg-green-400' : 'bg-red-400' }} ml-2 flex-shrink-0"></div>
                 </div>
 
-                <form method="POST" action="{{ route('admin.toggle-addon', $slug) }}" style="display: inline;">
+                <form method="POST" action="{{ route('admin.toggle-addon', $slug) }}" class="inline">
                     @csrf
-                    <button type="submit" style="background: {{ $addon['enabled'] ? 'linear-gradient(45deg, #ef4444, #dc2626)' : 'linear-gradient(45deg, #22c55e, #16a34a)' }}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 25px; cursor: pointer; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <button type="submit" class="text-xs px-3 py-1 rounded-full font-medium transition-all {{ $addon['enabled'] ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white' }}">
                         {{ $addon['enabled'] ? 'Disable' : 'Enable' }}
                     </button>
                 </form>
@@ -98,27 +98,27 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="stat-card" style="margin-top: 2rem;">
-    <h3 style="font-size: 1.25rem; font-weight: 600; color: #ffd700; margin-bottom: 1rem;">Quick Actions</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <a href="{{ route('admin.users') }}" style="background: linear-gradient(45deg, #3b82f6, #1d4ed8); color: white; padding: 1rem; border-radius: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(59, 130, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">👥</div>
-            <div style="font-weight: 600;">Manage Users</div>
+<div class="stat-card">
+    <h3 class="text-lg font-semibold text-gold-400 mb-3">Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <a href="{{ route('admin.users') }}" class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg text-center transition-all hover:transform hover:scale-105">
+            <div class="text-xl mb-1"><i class="fas fa-users"></i></div>
+            <div class="font-semibold text-sm">Users</div>
         </a>
 
-        <a href="{{ route('admin.analytics') }}" style="background: linear-gradient(45deg, #8b5cf6, #7c3aed); color: white; padding: 1rem; border-radius: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(139, 92, 246, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📊</div>
-            <div style="font-weight: 600;">View Analytics</div>
+        <a href="{{ route('admin.analytics') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg text-center transition-all hover:transform hover:scale-105">
+            <div class="text-xl mb-1"><i class="fas fa-chart-bar"></i></div>
+            <div class="font-semibold text-sm">Analytics</div>
         </a>
 
-        <a href="{{ route('admin.logs') }}" style="background: linear-gradient(45deg, #f59e0b, #d97706); color: white; padding: 1rem; border-radius: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(245, 158, 11, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📝</div>
-            <div style="font-weight: 600;">System Logs</div>
+        <a href="{{ route('admin.logs') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-lg text-center transition-all hover:transform hover:scale-105">
+            <div class="text-xl mb-1"><i class="fas fa-file-alt"></i></div>
+            <div class="font-semibold text-sm">Logs</div>
         </a>
 
-        <a href="{{ route('admin.settings') }}" style="background: linear-gradient(45deg, #10b981, #059669); color: white; padding: 1rem; border-radius: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚙️</div>
-            <div style="font-weight: 600;">Settings</div>
+        <a href="{{ route('admin.settings') }}" class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg text-center transition-all hover:transform hover:scale-105">
+            <div class="text-xl mb-1"><i class="fas fa-cog"></i></div>
+            <div class="font-semibold text-sm">Settings</div>
         </a>
     </div>
 </div>

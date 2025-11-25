@@ -40,4 +40,35 @@ class GoogleAuthController extends Controller
             return redirect()->route('login')->with('error', 'Google login failed.');
         }
     }
+
+    public function redirectToGitHub()
+    {
+        return Socialite::driver('github')->redirect();
+    }
+
+    public function handleGitHubCallback()
+    {
+        try {
+            $githubUser = Socialite::driver('github')->user();
+
+            $user = User::where('email', $githubUser->getEmail())->first();
+
+            if ($user) {
+                Auth::login($user);
+            } else {
+                $user = User::create([
+                    'name' => $githubUser->getName(),
+                    'email' => $githubUser->getEmail(),
+                    'password' => Hash::make(uniqid()), // Random password since GitHub auth
+                    'role' => 'user',
+                ]);
+
+                Auth::login($user);
+            }
+
+            return redirect()->route('pdf-converter');
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'GitHub login failed.');
+        }
+    }
 }
