@@ -105,6 +105,7 @@
 @endsection
 
 @section('content')
+@if(isAddonEnabled('pdf-converter'))
 <div class="pdf-converter-page">
     <!-- Messages Container -->
     <div id="messages-container"></div>
@@ -347,6 +348,14 @@
         </div>
     </main>
 </div>
+@else
+<div class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="text-2xl font-bold text-white mb-4">Addon Not Available</h1>
+        <p class="text-zinc-400">This feature is currently disabled. Please contact administrator.</p>
+    </div>
+</div>
+@endif
 @endsection
 
 @section('scripts')

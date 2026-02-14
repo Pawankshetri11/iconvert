@@ -140,6 +140,9 @@
                         <input type="email" name="email" value="{{ old('email') }}" placeholder="Email Address" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required autofocus>
                         <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
                     </div>
+                    @error('email')
+                        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                    @enderror
 
                     <div class="input-wrapper">
                         <input type="password" name="password" placeholder="Password" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required>
@@ -163,7 +166,7 @@
                         <div class="flex-grow border-t border-white/10"></div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-3 mb-6">
                         <a href="{{ route('google.login') }}" class="social-btn group">
                             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -189,18 +192,30 @@
                         <input type="text" name="name" value="{{ old('name') }}" placeholder="Full Name" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required>
                         <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     </div>
+                    @error('name')
+                        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                    @enderror
                     <div class="input-wrapper">
                         <input type="email" name="email" value="{{ old('email') }}" placeholder="Email Address" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required>
                         <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
                     </div>
+                    @error('email')
+                        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                    @enderror
                     <div class="input-wrapper">
                         <input type="password" name="password" placeholder="Password" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required>
                         <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </div>
+                    @error('password')
+                        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                    @enderror
                     <div class="input-wrapper">
                         <input type="password" name="password_confirmation" placeholder="Confirm Password" class="input-field w-full pl-9 pr-3 py-2.5 rounded-lg text-sm bg-transparent text-white placeholder-zinc-600 focus:outline-none" required>
                         <svg class="input-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </div>
+                    @error('password_confirmation')
+                        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+                    @enderror
 
                     <button type="submit" class="btn-gold mt-2 w-full font-bold py-2.5 rounded-lg active:scale-[0.98] text-sm uppercase tracking-wide">
                         Create Account
@@ -212,7 +227,7 @@
                         <div class="flex-grow border-t border-white/10"></div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-3 mb-6">
                         <a href="{{ route('google.login') }}" class="social-btn group">
                             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

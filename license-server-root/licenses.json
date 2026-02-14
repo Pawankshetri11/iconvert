@@ -1,0 +1,11 @@
+{
+    "ROYAL-A06F8EAC9A25E453": {
+        "domain": "example.com",
+        "client_name": "Test Client",
+        "email": "test@example.com",
+        "type": "extended",
+        "status": "active",
+        "activated_at": "2025-12-17 18:15:18",
+        "created_at": "2025-12-17 18:15:18"
+    }
+}

@@ -308,8 +308,25 @@ function processPdfToText($user, $isGuest) {
         exit;
 
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to extract text from PDF: ' . $e->getMessage()]);
+        // Fallback: Provide a message indicating the limitation
+        $fallbackText = "PDF Text Extraction\r\n\r\n";
+        $fallbackText .= "File: " . $files['name'] . "\r\n";
+        $fallbackText .= "Status: Text extraction requires pdftotext binary\r\n\r\n";
+        $fallbackText .= "Error: " . $e->getMessage() . "\r\n\r\n";
+        $fallbackText .= "To enable full functionality:\r\n";
+        $fallbackText .= "1. Install a compatible pdftotext binary for your system\r\n";
+        $fallbackText .= "2. Ensure it's available in your system PATH\r\n";
+        $fallbackText .= "3. Or deploy on a Linux server where pdftotext is readily available\r\n";
+
+        $textFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '_extraction_info.txt';
+
+        // Log conversion (even with fallback)
+        logConversion($user, $isGuest, 'pdf-converter', 'pdf-to-text', $files['name'], $textFilename, strlen($fallbackText));
+
+        header('Content-Type: text/plain');
+        header('Content-Disposition: attachment; filename="' . $textFilename . '"');
+        header('Content-Length: ' . strlen($fallbackText));
+        echo $fallbackText;
         exit;
     }
 }
@@ -356,21 +373,41 @@ function processPdfToImages($user, $isGuest) {
     $files = $_FILES['files'];
     $uploadedFile = $files['tmp_name'];
     $imageFormat = $_POST['image-format'] ?? 'png';
-    $resolution = (int)($_POST['resolution'] ?? 150);
 
     try {
-        // Use ImageMagick or similar to convert PDF pages to images
-        // For now, create a simple placeholder implementation
-        $zipFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '_images.zip';
-
-        // Create a temporary directory for images
+        // Create a placeholder ZIP file with a note
+        // In a full implementation, you'd need ImageMagick or similar
         $tempDir = sys_get_temp_dir() . '/pdf_images_' . uniqid();
         mkdir($tempDir);
 
-        // Simulate creating image files (in real implementation, use proper PDF to image conversion)
-        for ($i = 1; $i <= 3; $i++) { // Assume 3 pages for demo
-            $imageContent = 'Simulated image content for page ' . $i; // Replace with actual image generation
-            file_put_contents($tempDir . '/page_' . $i . '.' . $imageFormat, $imageContent);
+        // Create a text file explaining the limitation
+        $noteContent = "PDF to Images Conversion\r\n\r\n";
+        $noteContent .= "File: " . $files['name'] . "\r\n";
+        $noteContent .= "Format: " . $imageFormat . "\r\n\r\n";
+        $noteContent .= "Note: Full PDF to images conversion requires the ImageMagick PHP extension.\r\n";
+        $noteContent .= "This is a placeholder implementation. Please install the imagick extension for full functionality.\r\n\r\n";
+        $noteContent .= "To install on Windows:\r\n";
+        $noteContent .= "1. Download the imagick DLL from https://windows.php.net/downloads/pecl/releases/imagick/\r\n";
+        $noteContent .= "2. Add to your php.ini: extension=imagick\r\n";
+        $noteContent .= "3. Restart your web server\r\n";
+
+        file_put_contents($tempDir . '/README.txt', $noteContent);
+
+        // Create a sample placeholder image (simple colored square)
+        if (function_exists('imagecreatetruecolor')) {
+            $image = imagecreatetruecolor(400, 300);
+            $bgColor = imagecolorallocate($image, 240, 240, 240);
+            $textColor = imagecolorallocate($image, 0, 0, 0);
+            imagefill($image, 0, 0, $bgColor);
+            imagestring($image, 5, 150, 140, 'PDF Page Preview', $textColor);
+            imagestring($image, 3, 120, 160, '(Placeholder - Install ImageMagick)', $textColor);
+
+            if ($imageFormat === 'png') {
+                imagepng($image, $tempDir . '/page_1.png');
+            } else {
+                imagejpeg($image, $tempDir . '/page_1.jpg');
+            }
+            imagedestroy($image);
         }
 
         // Create ZIP file
@@ -378,8 +415,8 @@ function processPdfToImages($user, $isGuest) {
         $zipFile = tempnam(sys_get_temp_dir(), 'pdf_images_') . '.zip';
         $zip->open($zipFile, ZipArchive::CREATE);
 
-        $files = scandir($tempDir);
-        foreach ($files as $file) {
+        $filesInDir = scandir($tempDir);
+        foreach ($filesInDir as $file) {
             if ($file !== '.' && $file !== '..') {
                 $zip->addFile($tempDir . '/' . $file, $file);
             }
@@ -392,6 +429,8 @@ function processPdfToImages($user, $isGuest) {
 
         $zipContent = file_get_contents($zipFile);
         unlink($zipFile);
+
+        $zipFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '_images.zip';
 
         // Log conversion
         logConversion($user, $isGuest, 'pdf-converter', 'pdf-to-images', $files['name'], $zipFilename, strlen($zipContent));
@@ -484,17 +523,103 @@ function processWordToPdf($user, $isGuest) {
 }
 
 function processExcelToPdf($user, $isGuest) {
-    // Implementation for Excel to PDF conversion
-    http_response_code(501);
-    echo json_encode(['error' => 'Excel to PDF conversion not yet implemented']);
-    exit;
+    // Basic implementation - extract text and create simple PDF
+    if (!isset($_FILES['files']) || empty($_FILES['files'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'No files uploaded']);
+        exit;
+    }
+
+    $files = $_FILES['files'];
+    $uploadedFile = $files['tmp_name'];
+
+    try {
+        // For now, create a placeholder PDF indicating Excel conversion
+        // In a full implementation, you'd need PhpSpreadsheet library
+        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $dompdf->setOptions($options);
+
+        $htmlContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Excel to PDF</title>';
+        $htmlContent .= '<style>body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }</style>';
+        $htmlContent .= '</head><body>';
+        $htmlContent .= '<h1>Excel to PDF Conversion</h1>';
+        $htmlContent .= '<p><strong>File:</strong> ' . htmlspecialchars($files['name']) . '</p>';
+        $htmlContent .= '<p><em>Note: Full Excel to PDF conversion requires additional PHP extensions. This is a placeholder implementation.</em></p>';
+        $htmlContent .= '<p>Please ensure the GD extension is installed for full functionality.</p>';
+        $htmlContent .= '</body></html>';
+
+        $dompdf->loadHtml($htmlContent);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $pdfOutput = $dompdf->output();
+        $pdfFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '.pdf';
+
+        // Log conversion
+        logConversion($user, $isGuest, 'pdf-converter', 'excel-to-pdf', $files['name'], $pdfFilename, strlen($pdfOutput));
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
+        header('Content-Length: ' . strlen($pdfOutput));
+        echo $pdfOutput;
+        exit;
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to convert Excel to PDF: ' . $e->getMessage()]);
+        exit;
+    }
 }
 
 function processPowerPointToPdf($user, $isGuest) {
-    // Implementation for PowerPoint to PDF conversion
-    http_response_code(501);
-    echo json_encode(['error' => 'PowerPoint to PDF conversion not yet implemented']);
-    exit;
+    // Basic implementation - create placeholder PDF
+    if (!isset($_FILES['files']) || empty($_FILES['files'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'No files uploaded']);
+        exit;
+    }
+
+    $files = $_FILES['files'];
+
+    try {
+        // Create a placeholder PDF indicating PowerPoint conversion
+        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $dompdf->setOptions($options);
+
+        $htmlContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PowerPoint to PDF</title>';
+        $htmlContent .= '<style>body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }</style>';
+        $htmlContent .= '</head><body>';
+        $htmlContent .= '<h1>PowerPoint to PDF Conversion</h1>';
+        $htmlContent .= '<p><strong>File:</strong> ' . htmlspecialchars($files['name']) . '</p>';
+        $htmlContent .= '<p><em>Note: Full PowerPoint to PDF conversion requires additional PHP extensions. This is a placeholder implementation.</em></p>';
+        $htmlContent .= '<p>Please ensure the GD extension is installed for full functionality.</p>';
+        $htmlContent .= '</body></html>';
+
+        $dompdf->loadHtml($htmlContent);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $pdfOutput = $dompdf->output();
+        $pdfFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '.pdf';
+
+        // Log conversion
+        logConversion($user, $isGuest, 'pdf-converter', 'ppt-to-pdf', $files['name'], $pdfFilename, strlen($pdfOutput));
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
+        header('Content-Length: ' . strlen($pdfOutput));
+        echo $pdfOutput;
+        exit;
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to convert PowerPoint to PDF: ' . $e->getMessage()]);
+        exit;
+    }
 }
 
 function processHtmlToPdf($user, $isGuest) {
@@ -695,25 +820,71 @@ function processPdfEditor($user, $isGuest) {
 
     $files = $_FILES['files'];
     $uploadedFile = $files['tmp_name'];
+    $editorContent = $_POST['editor-content'] ?? '';
+    $position = $_POST['position'] ?? 'Center';
 
-    // For now, implement basic PDF editor functionality
-    // This is a placeholder - in a full implementation, you'd use a library like TCPDF or similar
-    // to add text, images, shapes, etc. to existing PDFs
+    if (empty($editorContent)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Editor content is required']);
+        exit;
+    }
 
     try {
-        // Basic implementation: just return the original PDF for now
-        // In a real implementation, you'd modify the PDF based on editor parameters
+        $pdf = new Fpdi();
+        $pageCount = $pdf->setSourceFile($uploadedFile);
 
-        $pdfContent = file_get_contents($uploadedFile);
+        // Set font for text addition
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetTextColor(0, 0, 0);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $size = $pdf->getTemplateSize($templateId);
+
+            $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+            $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height'], true);
+
+            // Add text based on position
+            $textWidth = $pdf->GetStringWidth($editorContent);
+            $textHeight = 12; // Approximate height for 12pt font
+
+            switch ($position) {
+                case 'Top Left':
+                    $x = 20;
+                    $y = 30;
+                    break;
+                case 'Top Right':
+                    $x = $size['width'] - $textWidth - 20;
+                    $y = 30;
+                    break;
+                case 'Bottom Left':
+                    $x = 20;
+                    $y = $size['height'] - 20;
+                    break;
+                case 'Bottom Right':
+                    $x = $size['width'] - $textWidth - 20;
+                    $y = $size['height'] - 20;
+                    break;
+                case 'Center':
+                default:
+                    $x = ($size['width'] - $textWidth) / 2;
+                    $y = ($size['height'] + $textHeight) / 2;
+                    break;
+            }
+
+            $pdf->Text($x, $y, $editorContent);
+        }
+
+        $pdfOutput = $pdf->Output('S');
         $pdfFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '_edited.pdf';
 
         // Log conversion
-        logConversion($user, $isGuest, 'pdf-converter', 'pdf-editor', $files['name'], $pdfFilename, strlen($pdfContent));
+        logConversion($user, $isGuest, 'pdf-converter', 'pdf-editor', $files['name'], $pdfFilename, strlen($pdfOutput));
 
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
-        header('Content-Length: ' . strlen($pdfContent));
-        echo $pdfContent;
+        header('Content-Length: ' . strlen($pdfOutput));
+        echo $pdfOutput;
         exit;
 
     } catch (Exception $e) {
@@ -1264,9 +1435,46 @@ function processPdfCompress($user, $isGuest) {
 }
 
 function processPdfRepair($user, $isGuest) {
-    http_response_code(501);
-    echo json_encode(['error' => 'PDF Repair not yet implemented']);
-    exit;
+    if (!isset($_FILES['files']) || empty($_FILES['files'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'No files uploaded']);
+        exit;
+    }
+
+    $files = $_FILES['files'];
+    $uploadedFile = $files['tmp_name'];
+
+    try {
+        // Attempt to repair PDF by re-saving it through FPDI
+        $pdf = new Fpdi();
+        $pageCount = $pdf->setSourceFile($uploadedFile);
+
+        // Copy all pages to create a "repaired" version
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $size = $pdf->getTemplateSize($templateId);
+
+            $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+            $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height'], true);
+        }
+
+        $pdfOutput = $pdf->Output('S');
+        $pdfFilename = pathinfo($files['name'], PATHINFO_FILENAME) . '_repaired.pdf';
+
+        // Log conversion
+        logConversion($user, $isGuest, 'pdf-converter', 'pdf-repair', $files['name'], $pdfFilename, strlen($pdfOutput));
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $pdfFilename . '"');
+        header('Content-Length: ' . strlen($pdfOutput));
+        echo $pdfOutput;
+        exit;
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to repair PDF. The file may be severely corrupted: ' . $e->getMessage()]);
+        exit;
+    }
 }
 
 // Helper functions

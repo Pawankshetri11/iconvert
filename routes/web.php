@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\SystemUpdateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -141,7 +143,7 @@ Route::get('/dashboard', function () {
     // PDF Converter routes (freemium - allow guests with limits)
     Route::get('/pdf-converter', function () {
         return view('pdf-converter');
-    })->name('pdf-converter');
+    })->middleware('check.addon:pdf-converter')->name('pdf-converter');
 
     Route::get('/pdf-editor/{tool}', function ($tool) {
         $allowedTools = [
@@ -156,20 +158,20 @@ Route::get('/dashboard', function () {
         }
 
         return view('pdf-editor', compact('tool'));
-    })->name('pdf-editor');
+    })->middleware('check.addon:pdf-converter')->name('pdf-editor');
 
     // PDF Tools Suite - Allow guests for basic tools
     Route::post('/pdf-tools/process', function (Illuminate\Http\Request $request) {
         // Include the comprehensive PDF tools handler
         require __DIR__ . '/../addons/pdf-converter/handlers/pdf-tools.php';
         exit; // Prevent Laravel from continuing
-    });
+    })->middleware('check.addon:pdf-converter');
 
     Route::post('/pdf-converter/convert', function (Illuminate\Http\Request $request) {
         // Include our custom handler
         require __DIR__ . '/../addons/pdf-converter/handlers/convert.php';
         exit; // Prevent Laravel from continuing
-    });
+    })->middleware('check.addon:pdf-converter');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -181,7 +183,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cancel-subscription', [App\Http\Controllers\AdminController::class, 'cancelSubscription'])->name('cancel-subscription');
 });
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', \App\Http\Middleware\CheckLicense::class])->group(function () {
     Route::get('/admin', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // User Management
@@ -193,7 +195,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Addon Management
     Route::get('/admin/addons', [App\Http\Controllers\AdminController::class, 'addons'])->name('admin.addons');
     Route::post('/admin/addons/install', [App\Http\Controllers\AdminController::class, 'installAddon'])->name('admin.install-addon');
-    Route::post('/admin/addon/{addonSlug}/toggle', [App\Http\Controllers\AdminController::class, 'toggleAddon'])->name('admin.toggle-addon');
+    Route::match(['POST', 'PATCH'], '/admin/addon/{addonSlug}/toggle', [App\Http\Controllers\AdminController::class, 'toggleAddon'])->name('admin.toggle-addon');
 
     // Analytics
     Route::get('/admin/analytics', [App\Http\Controllers\AdminController::class, 'analytics'])->name('admin.analytics');
@@ -222,6 +224,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/settings', [App\Http\Controllers\AdminController::class, 'updateSettings'])->name('admin.update-settings');
     Route::post('/admin/payment-gateways', [App\Http\Controllers\AdminController::class, 'updatePaymentGateways'])->name('admin.update-payment-gateways');
     Route::post('/admin/clear-cache', [App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.clear-cache');
+
+    // License Management
+    Route::get('/admin/license', [LicenseController::class, 'index'])->name('admin.license.index');
+    Route::post('/admin/license/activate', [LicenseController::class, 'activate'])->name('admin.license.activate');
+    Route::get('/admin/license/check', [LicenseController::class, 'checkConnection'])->name('admin.license.check');
+    Route::delete('/admin/license/deactivate', [LicenseController::class, 'deactivate'])->name('admin.license.deactivate');
+
+    // System Updates
+    Route::get('/admin/updates', [SystemUpdateController::class, 'index'])->name('admin.updates.index');
+    Route::get('/admin/updates/check', [SystemUpdateController::class, 'check'])->name('admin.updates.check');
 });
 
 Route::get('/auth/google', [App\Http\Controllers\GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');

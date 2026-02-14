@@ -101,18 +101,24 @@ class AdminController extends Controller
 
     public function toggleAddon(Request $request, $addonSlug)
     {
-        $addons = $this->getAvailableAddons();
-        if (!isset($addons[$addonSlug])) {
-            return redirect()->back()->with('error', 'Addon not found.');
+        try {
+            $addons = $this->getAvailableAddons();
+            if (!isset($addons[$addonSlug])) {
+                return redirect()->back()->with('error', 'Addon not found.');
+            }
+
+            $addon = $addons[$addonSlug];
+            $newStatus = !$addon['enabled'];
+
+            // Save to config
+            $this->saveAddonStatus($addonSlug, $newStatus);
+
+            $statusText = $newStatus ? 'enabled' : 'disabled';
+            return redirect()->back()->with('success', "Addon '{$addon['name']}' has been {$statusText} successfully.");
+        } catch (\Exception $e) {
+            Log::error('Error toggling addon: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update addon status. Please try again.');
         }
-
-        $addon = $addons[$addonSlug];
-        $addon['enabled'] = !$addon['enabled'];
-
-        // Save to config or database
-        $this->saveAddonStatus($addonSlug, $addon['enabled']);
-
-        return redirect()->back()->with('success', 'Addon status updated.');
     }
 
     public function installAddon(Request $request)
@@ -565,7 +571,9 @@ class AdminController extends Controller
                     $configFile = $addonsDir . '/' . $dir . '/config.php';
                     if (file_exists($configFile)) {
                         $config = include $configFile;
-                        $addons[$dir] = $config + ['enabled' => $this->isAddonEnabled($dir)];
+                        // Override the enabled status with system config value
+                        $config['enabled'] = $this->isAddonEnabled($dir);
+                        $addons[$dir] = $config;
                     }
                 }
             }
@@ -576,14 +584,40 @@ class AdminController extends Controller
 
     private function isAddonEnabled($addonSlug)
     {
-        // For simplicity, check if directory exists and has config
-        // In production, store in database
-        return true; // All addons are enabled by default
+        // Force fresh config load by reading directly from file
+        $configPath = config_path('system.php');
+        if (file_exists($configPath)) {
+            $config = include $configPath;
+            $statuses = $config['addons']['statuses'] ?? [];
+            return $statuses[$addonSlug] ?? false;
+        }
+        return false;
     }
 
     private function saveAddonStatus($addonSlug, $enabled)
     {
-        // In production, save to database
-        // For now, just return
+        // Read current config to preserve other settings
+        $currentConfig = include config_path('system.php');
+        $statuses = $currentConfig['addons']['statuses'] ?? [];
+        $statuses[$addonSlug] = $enabled;
+
+        // Update the config file with complete structure (no env() calls)
+        $configPath = config_path('system.php');
+
+        // Build the statuses array manually to ensure correct format
+        $statusesStr = "[\n";
+        foreach ($statuses as $key => $value) {
+            $statusesStr .= "            '{$key}' => " . ($value ? 'true' : 'false') . ",\n";
+        }
+        $statusesStr .= "        ]";
+
+        $configContent = "<?php\n\nreturn [\n    'app' => [\n        'name' => 'Royal SaaS Starter',\n        'env' => 'local',\n        'debug' => true,\n    ],\n    'addons' => [\n        'enabled' => true,\n        'statuses' => {$statusesStr},\n    ],\n    'license' => [\n        'server_url' => 'https://server.4amtech.in/api/license',\n        'require_online' => true,\n    ],\n];\n";
+
+        file_put_contents($configPath, $configContent);
+
+        // Clear all caches including config cache
+        \Illuminate\Support\Facades\Cache::flush();
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
     }
 }

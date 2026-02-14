@@ -395,6 +395,16 @@
                         <i class="fas fa-cog sidebar-icon"></i>
                         <span class="sidebar-text">Settings</span>
                     </a>
+
+                    <a href="{{ route('admin.license.index') }}" class="sidebar-item {{ request()->routeIs('admin.license*') ? 'active' : '' }}">
+                        <i class="fas fa-key sidebar-icon"></i>
+                        <span class="sidebar-text">License</span>
+                    </a>
+
+                    <a href="{{ route('admin.updates.index') }}" class="sidebar-item {{ request()->routeIs('admin.updates*') ? 'active' : '' }}">
+                        <i class="fas fa-sync sidebar-icon"></i>
+                        <span class="sidebar-text">Updates</span>
+                    </a>
                 </nav>
             </div>
 
@@ -490,6 +500,16 @@
                 <a href="{{ route('admin.settings') }}" class="sidebar-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                     <i class="fas fa-cog sidebar-icon"></i>
                     <span class="sidebar-text">Settings</span>
+                </a>
+
+                <a href="{{ route('admin.license.index') }}" class="sidebar-item {{ request()->routeIs('admin.license*') ? 'active' : '' }}">
+                    <i class="fas fa-key sidebar-icon"></i>
+                    <span class="sidebar-text">License</span>
+                </a>
+
+                <a href="{{ route('admin.updates.index') }}" class="sidebar-item {{ request()->routeIs('admin.updates*') ? 'active' : '' }}">
+                    <i class="fas fa-sync sidebar-icon"></i>
+                    <span class="sidebar-text">Updates</span>
                 </a>
             </nav>
         </div>
